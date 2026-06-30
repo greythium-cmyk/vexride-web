@@ -10,8 +10,6 @@ import {
   type PlanFeature,
   type PlanId,
 } from "@/lib/subscription/plans";
-import { isStripeClientConfigured } from "@/lib/env";
-import { loadStripe } from "@stripe/stripe-js";
 
 interface UseSubscriptionOptions {
   planName: string;
@@ -64,7 +62,22 @@ export function useSubscription({ planName }: UseSubscriptionOptions) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ planId: targetPlan }),
     });
-    const data = (await res.json()) as { url?: string; demo?: boolean; planId?: PlanId };
+    const data = (await res.json()) as {
+      url?: string;
+      demo?: boolean;
+      planId?: PlanId;
+      error?: string;
+    };
+
+    if (res.status === 401) {
+      const returnUrl = window.location.href;
+      window.location.href = `/sign-in?redirect_url=${encodeURIComponent(returnUrl)}`;
+      return { authRequired: true as const };
+    }
+
+    if (!res.ok) {
+      throw new Error(data.error ?? "No se pudo iniciar el checkout");
+    }
 
     if (data.demo) {
       simulateSubscription(data.planId ?? targetPlan);
@@ -72,18 +85,11 @@ export function useSubscription({ planName }: UseSubscriptionOptions) {
     }
 
     if (data.url) {
-      if (isStripeClientConfigured()) {
-        const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-        if (stripe) {
-          window.location.href = data.url;
-          return { redirect: true as const };
-        }
-      }
       window.location.href = data.url;
       return { redirect: true as const };
     }
 
-    throw new Error("Checkout failed");
+    throw new Error(data.error ?? "No se pudo iniciar el checkout");
   }, [simulateSubscription]);
 
   const openBillingPortal = useCallback(async () => {

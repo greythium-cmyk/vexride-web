@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Check, Crown, Sparkles, Building } from "lucide-react";
+import { Check, Crown, Sparkles, Building, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,9 +15,24 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useSubscription } from "@/hooks/use-subscription";
+import { type PlanId } from "@/lib/subscription/plans";
+import { toast } from "sonner";
 
-const plans = [
+const plans: Array<{
+  planId: PlanId;
+  name: string;
+  price: string;
+  period: string;
+  priceNote?: string;
+  description: string;
+  features: string[];
+  cta: string;
+  popular: boolean;
+  icon: typeof Sparkles;
+}> = [
   {
+    planId: "free",
     name: "Freemium",
     price: "Gratis",
     period: "",
@@ -33,6 +50,7 @@ const plans = [
     icon: Sparkles,
   },
   {
+    planId: "starter",
     name: "Starter",
     price: "$29",
     period: "/mes",
@@ -51,6 +69,7 @@ const plans = [
     icon: Sparkles,
   },
   {
+    planId: "pro",
     name: "Pro",
     price: "$69",
     period: "/mes",
@@ -71,6 +90,7 @@ const plans = [
     icon: Crown,
   },
   {
+    planId: "enterprise",
     name: "Enterprise",
     price: "$199",
     period: "/mes",
@@ -94,6 +114,34 @@ const plans = [
 ];
 
 export function Pricing() {
+  const router = useRouter();
+  const { startCheckout, simulateSubscription } = useSubscription({ planName: "Free" });
+  const [loadingPlan, setLoadingPlan] = useState<PlanId | null>(null);
+
+  const handlePlanSelect = async (planId: PlanId) => {
+    if (planId === "free") {
+      router.push("/sign-up");
+      return;
+    }
+
+    setLoadingPlan(planId);
+    try {
+      const result = await startCheckout(planId);
+      if (result && "demo" in result && result.demo) {
+        simulateSubscription(planId);
+        toast.success(`¡Plan ${planId} activado!`, {
+          description: "Suscripción simulada en modo demo.",
+        });
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "No se pudo iniciar el checkout"
+      );
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
+
   return (
     <section id="precios" className="relative py-24 lg:py-32">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#14B8A6]/5 to-transparent" />
@@ -206,7 +254,12 @@ export function Pricing() {
                         : "border-white/10 bg-white/5 text-white hover:bg-white/10"
                     )}
                     variant={plan.popular ? "default" : "outline"}
+                    disabled={loadingPlan === plan.planId}
+                    onClick={() => void handlePlanSelect(plan.planId)}
                   >
+                    {loadingPlan === plan.planId && (
+                      <Loader2 className="size-4 animate-spin" aria-hidden />
+                    )}
                     {plan.cta}
                   </Button>
                 </CardFooter>
