@@ -4,104 +4,149 @@
 
 División tecnológica de **Greythium Incorporated** (Nueva York).
 
+> **Producto lanzado — 30 de junio de 2026**  
+> Vexride está listo para compartir, demo y deploy en producción.
+
+---
+
+## Producto Lanzado
+
+Vexride v1.0 incluye todo lo necesario para un SaaS de movilidad laboral:
+
+| Módulo | Capacidades |
+|--------|-------------|
+| **Landing** | Hero, pricing, LAUNCH50, Vex AI, footer premium |
+| **Dashboard** | Viajes, matches, stats, modals, FAB, pull-to-refresh |
+| **Realtime** | Supabase live + simulador demo + toasts + highlights |
+| **Auth** | Clerk + loading gate + modo demo sin login |
+| **Pagos** | Stripe checkout, portal, webhooks, plan gating |
+| **Mapas** | Leaflet/OSM interactivo en detalle de viaje |
+| **Vex AI** | Streaming OpenAI + mock fallback + gating Pro |
+| **PWA/SEO** | Manifest, SW, favicon, robots, sitemap, OG |
+
+### Modo demo (cero configuración)
+
+Sin `.env.local` el producto funciona al 100%:
+
+```bash
+cd vexride && npm install && npm run dev
+```
+
+- Dashboard con datos mock y Realtime simulado (~15s)
+- Mapas OpenStreetMap
+- Suscripción simulada en `/pricing` (confetti al activar Pro)
+- Health check: `GET /api/health` → `{ "status": "ok", "mode": "demo" }`
+
+---
+
+## Deploy rápido (≈10 minutos)
+
+### 1. Vercel
+
+1. Importa el repo en [vercel.com](https://vercel.com) — **Root Directory:** `vexride`
+2. Copia variables de `.env.example` (ver abajo)
+3. Deploy
+
+### 2. Variables de entorno
+
+```env
+# Obligatorias para producción completa
+NEXT_PUBLIC_APP_URL=https://tu-dominio.vercel.app
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
+CLERK_SECRET_KEY=sk_live_...
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+STRIPE_SECRET_KEY=sk_live_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PRICE_STARTER=price_...
+STRIPE_PRICE_PRO=price_...
+STRIPE_PRICE_ENTERPRISE=price_...
+CLERK_WEBHOOK_SECRET=whsec_...
+
+# Opcionales
+OPENAI_API_KEY=sk-...
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
+```
+
+### 3. Supabase (SQL Editor)
+
+Ejecuta en orden:
+
+1. `supabase/schema.sql`
+2. `supabase/migrations/001_realtime_live.sql`
+3. `supabase/migrations/002_stripe_subscriptions.sql`
+
+Activa Realtime en: `trips`, `matches`, `notifications`, `chat_messages`.
+
+### 4. Webhooks
+
+| Servicio | URL | Eventos |
+|----------|-----|---------|
+| Stripe | `/api/webhooks/stripe` | `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted` |
+| Clerk | `/api/webhooks/clerk` | `user.created`, `user.updated` |
+
+### 5. Verificación post-deploy
+
+```bash
+curl https://tu-dominio.vercel.app/api/health
+# → { "status": "ok", "mode": "production", "timestamp": "..." }
+```
+
+| Ruta | Qué verificar |
+|------|---------------|
+| `/` | Landing carga |
+| `/pricing` | Planes + checkout demo/Stripe |
+| `/dashboard` | Viajes, mapa, Realtime, plan badge |
+| `/api/health` | `status: ok`, `mode: production` |
+
+---
+
 ## Stack
 
-- **Next.js 16** (App Router) · **React 19** · **Tailwind v4** · shadcn/ui
-- **Clerk** auth · **Supabase** + Realtime · **Stripe** suscripciones
-- **Leaflet** mapas interactivos · **Sonner** toasts · **Vercel AI SDK**
-- **PWA** manifest + service worker
+Next.js 16 · React 19 · Tailwind v4 · Clerk · Supabase · Stripe · Leaflet · Sonner · Vercel AI SDK · PWA
 
-## Features listas para producción
-
-| Feature | Estado |
-|---------|--------|
-| Landing + pricing + LAUNCH50 | ✅ |
-| Dashboard + Realtime + toasts | ✅ |
-| Stripe checkout + webhooks + plan gating | ✅ |
-| Mapas interactivos (Leaflet/OSM) | ✅ |
-| Modo demo completo (sin env) | ✅ |
-| Clerk + Supabase + Vex AI | ✅ |
-| PWA · SEO · robots.txt · error boundaries | ✅ |
-
-## Cómo lanzar en 1-click (Vercel)
-
-1. **Fork / import** el repo en [Vercel](https://vercel.com) (root: `vexride`)
-2. **Variables de entorno** — copia todas desde `.env.example`:
-   - Clerk (publishable + secret + webhook secret)
-   - Supabase (URL, anon, service role)
-   - Stripe (keys + 3 price IDs + webhook secret)
-   - OpenAI (opcional)
-   - `NEXT_PUBLIC_APP_URL=https://tu-dominio.vercel.app`
-3. **Supabase SQL** — ejecuta `schema.sql` + `migrations/001_*` + `002_stripe_subscriptions.sql`
-4. **Stripe webhook** — `https://tu-dominio/api/webhooks/stripe`  
-   Eventos: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
-5. **Clerk webhook** — `https://tu-dominio/api/webhooks/clerk`
-6. **Deploy** → verifica `/`, `/pricing`, `/dashboard`, `/api/health`
-
-```bash
-npm run build   # siempre antes de push
-```
-
-## Getting Started (local)
-
-```bash
-cd vexride
-npm install
-cp .env.example .env.local
-npm run dev
-```
+## Rutas locales
 
 | Ruta | URL |
 |------|-----|
 | Landing | http://localhost:3000 |
 | Precios | http://localhost:3000/pricing |
 | Dashboard | http://localhost:3000/dashboard |
-
-> **Sin `.env.local`** → modo demo: datos mock, mapas OSM, suscripción simulada en `/pricing`.
-
-## Stripe
-
-- Página `/pricing` con planes Free · Starter · Pro · Enterprise
-- Checkout: `POST /api/stripe/checkout` → Stripe Session
-- Portal: `POST /api/stripe/portal` (clientes existentes)
-- Webhook: `POST /api/webhooks/stripe` → actualiza `profiles.plan`
-- **Demo**: sin Stripe env, el checkout simula suscripción vía `localStorage`
-
-### Plan gating
-
-| Feature | Plan mínimo |
-|---------|-------------|
-| Match breakdown IA | Starter |
-| Vex AI streaming prioritario | Pro |
-| Unirse a Premium Drivers | Pro |
-
-## Mapas
-
-- Modal de viaje: mapa Leaflet + CartoDB dark tiles (OpenStreetMap)
-- Ruta, origen, destino y punto de pickup
-- Coordenadas en mock data + Supabase (`driver_lat`, `driver_lng`)
-- `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` opcional para futura integración Google
-
-## Supabase Realtime
-
-Ver sección en migraciones y README anterior para SQL de prueba en vivo.
+| Health | http://localhost:3000/api/health |
 
 ## Scripts
 
 ```bash
-npm run dev
-npm run build
-npm run start
-npm run lint
+npm run dev      # desarrollo
+npm run build    # build producción
+npm run start    # servir build
+npm run lint     # ESLint
 ```
 
-## Pendiente crítico post-lanzamiento
+## Plan gating
+
+| Feature | Plan mínimo |
+|---------|-------------|
+| Match breakdown IA | Starter |
+| Vex AI streaming | Pro |
+| Premium Drivers | Pro |
+
+## Documentación adicional
+
+- **[LAUNCH-CHECKLIST.md](./LAUNCH-CHECKLIST.md)** — Checklist completo pre/post deploy y marketing
+
+## Post-lanzamiento (crítico)
 
 - Verificación KYC de conductores
-- Push notifications (web + mobile)
+- Push notifications
 - Sync calendario Google/Outlook
-- Analytics (PostHog / Vercel Analytics)
 
 ## Soporte
 
 Greythium@gmail.com
+
+---
+
+*Vexride © 2026 Greythium Incorporated*

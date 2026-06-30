@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppToaster } from "@/components/providers/app-toaster";
 import { PwaRegister } from "@/components/pwa-register";
+import { ProCelebration } from "@/components/subscription/pro-celebration";
 import { isClerkConfigured } from "@/lib/env";
 
 const clerkAppearance = {
@@ -32,6 +33,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
       <TooltipProvider delay={300}>{children}</TooltipProvider>
       <AppToaster />
       <PwaRegister />
+      <ProCelebration />
     </>
   );
 

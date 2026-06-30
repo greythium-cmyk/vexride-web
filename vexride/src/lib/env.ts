@@ -1,3 +1,5 @@
+export type AppMode = "demo" | "production";
+
 /** Returns true when Supabase URL + anon key are configured. */
 export function isSupabaseConfigured(): boolean {
   return Boolean(
@@ -29,4 +31,16 @@ export function isStripeClientConfigured(): boolean {
 /** Returns true when Google Maps API key is set. */
 export function isGoogleMapsConfigured(): boolean {
   return Boolean(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
+}
+
+/**
+ * App runtime mode for health checks and UI badges.
+ * - demo: no Clerk + Supabase (fully offline mock experience)
+ * - production: at least Clerk or Supabase configured
+ */
+export function getAppMode(): AppMode {
+  if (isClerkConfigured() || isSupabaseConfigured()) {
+    return "production";
+  }
+  return "demo";
 }
