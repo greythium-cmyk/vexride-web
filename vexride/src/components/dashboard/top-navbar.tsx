@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
-import { Bell, Menu, Search, ChevronDown, Database } from "lucide-react";
+import { Bell, Menu, Search, ChevronDown, Database, Radio } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -22,10 +22,11 @@ interface TopNavbarProps {
 }
 
 export function TopNavbar({ onMenuClick }: TopNavbarProps) {
-  const { data, source } = useDashboard();
+  const { data, source, realtimeStatus, newNotificationIds } = useDashboard();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const unreadCount = data.notifications.filter((n) => n.unread).length;
+  const hasNewPulse = newNotificationIds.size > 0;
 
   return (
     <header className="sticky top-0 z-30 border-b border-white/10 bg-[#0F172A]/80 backdrop-blur-xl">
@@ -59,14 +60,27 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
               }
             >
               <Database className="size-3" />
-              {source === "supabase" ? "Live" : "Demo"}
+              {source === "supabase"
+                ? realtimeStatus === "connected"
+                  ? "Live"
+                  : "Sync"
+                : "Demo"}
             </TooltipTrigger>
             <TooltipContent>
               {source === "supabase"
-                ? "Datos en tiempo real desde Supabase"
-                : "Datos de demostración — configura Supabase"}
+                ? realtimeStatus === "connected"
+                  ? "Supabase Realtime conectado"
+                  : "Conectando a Supabase Realtime…"
+                : "Demo en vivo simulado — configura Supabase para datos reales"}
             </TooltipContent>
           </Tooltip>
+
+          {realtimeStatus === "connected" && (
+            <span className="hidden items-center gap-1 text-[10px] text-[#14B8A6] sm:flex">
+              <Radio className="size-3 animate-pulse" aria-hidden />
+              RT
+            </span>
+          )}
 
           <div className="relative">
             <button
@@ -75,7 +89,10 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
                 setShowNotifications(!showNotifications);
                 setShowProfile(false);
               }}
-              className="relative rounded-xl p-2.5 text-slate-400 transition-colors hover:bg-white/5 hover:text-white focus-visible:ring-2 focus-visible:ring-[#14B8A6]/50"
+              className={cn(
+                "relative rounded-xl p-2.5 text-slate-400 transition-colors hover:bg-white/5 hover:text-white focus-visible:ring-2 focus-visible:ring-[#14B8A6]/50",
+                hasNewPulse && "animate-pulse"
+              )}
               aria-label={`Notificaciones${unreadCount ? `, ${unreadCount} sin leer` : ""}`}
               aria-expanded={showNotifications}
             >
@@ -100,7 +117,7 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
                         key={n.id}
                         className={cn(
                           "border-b border-white/5 px-4 py-3 transition-colors hover:bg-white/5",
-                          n.unread && "bg-[#14B8A6]/5"
+                          (n.unread || newNotificationIds.has(n.id)) && "bg-[#14B8A6]/5"
                         )}
                       >
                         <div className="flex items-start justify-between gap-2">

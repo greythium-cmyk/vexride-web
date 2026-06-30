@@ -1,6 +1,7 @@
 "use client";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { RealtimeSyncBanner } from "@/components/dashboard/realtime-sync-banner";
 import { WelcomeStats } from "@/components/dashboard/welcome-stats";
 import { ActiveTrips } from "@/components/dashboard/active-trips";
 import { AvailableMatches } from "@/components/dashboard/available-matches";
@@ -12,6 +13,7 @@ export default function DashboardPage() {
   return (
     <DashboardShell>
       <div className="mx-auto max-w-7xl space-y-8">
+        <RealtimeSyncBanner />
         <WelcomeStats />
 
         <div className="grid gap-8 xl:grid-cols-5">

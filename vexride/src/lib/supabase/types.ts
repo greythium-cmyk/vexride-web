@@ -37,6 +37,9 @@ type TripRow = {
   passengers: number;
   match_score: number;
   vehicle: string | null;
+  location_label?: string | null;
+  driver_lat?: number | null;
+  driver_lng?: number | null;
   created_at: string;
 };
 

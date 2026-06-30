@@ -6,11 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useDashboard } from "@/components/dashboard/dashboard-context";
+import { cn } from "@/lib/utils";
 import { MatchRowSkeleton } from "@/components/dashboard/ui/skeletons";
 import { EmptyState } from "@/components/dashboard/ui/empty-state";
 
 export function AvailableMatches() {
-  const { data, loading, joinedMatchIds, joinMatch, setShowNewCarpoolModal, setNewCarpoolMode } = useDashboard();
+  const { data, loading, joinedMatchIds, joinMatch, setShowNewCarpoolModal, setNewCarpoolMode, newMatchIds } = useDashboard();
   const matches = data.availableMatches.filter((m) => !joinedMatchIds.has(m.id));
 
   return (
@@ -45,19 +46,23 @@ export function AvailableMatches() {
         <div className="space-y-3">
           {data.availableMatches.map((match, i) => {
             const joined = joinedMatchIds.has(match.id);
+            const isNew = newMatchIds.has(match.id);
 
             return (
               <motion.div
                 key={match.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 12, scale: isNew ? 0.98 : 1 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.35, delay: i * 0.07 }}
                 whileHover={{ x: joined ? 0 : 4 }}
-                className={`flex flex-col gap-4 rounded-2xl border p-4 transition-all sm:flex-row sm:items-center sm:justify-between ${
+                className={cn(
+                  "flex flex-col gap-4 rounded-2xl border p-4 transition-all sm:flex-row sm:items-center sm:justify-between",
                   joined
                     ? "border-[#14B8A6]/30 bg-[#14B8A6]/5"
-                    : "border-white/10 bg-[#1E293B]/50 hover:border-[#14B8A6]/20 hover:shadow-md hover:shadow-teal-500/5"
-                }`}
+                    : isNew
+                      ? "border-[#22D3EE]/40 bg-[#22D3EE]/5 shadow-lg shadow-cyan-500/10 ring-1 ring-[#22D3EE]/20"
+                      : "border-white/10 bg-[#1E293B]/50 hover:border-[#14B8A6]/20 hover:shadow-md hover:shadow-teal-500/5"
+                )}
               >
                 <div className="flex items-center gap-4">
                   <Avatar>

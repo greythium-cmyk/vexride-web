@@ -25,6 +25,11 @@ export interface Trip {
   matchBreakdown?: MatchBreakdown;
   estimatedDuration?: string;
   pickupPoint?: string;
+  liveLocation?: {
+    label: string;
+    lat?: number;
+    lng?: number;
+  };
 }
 
 export interface MatchBreakdown {

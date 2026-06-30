@@ -8,25 +8,40 @@ import {
   Star,
   Users,
   Car,
+  MapPin,
+  Navigation,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useDashboard } from "@/components/dashboard/dashboard-context";
 import { StatusBadge } from "@/components/dashboard/ui/status-badge";
+import { useDashboard } from "@/components/dashboard/dashboard-context";
+import { cn } from "@/lib/utils";
 import { TripCardSkeleton } from "@/components/dashboard/ui/skeletons";
 import { EmptyState } from "@/components/dashboard/ui/empty-state";
 import type { Trip } from "@/lib/types/dashboard";
 
 function TripCard({ trip, index }: { trip: Trip; index: number }) {
-  const { setSelectedTrip, setChatCompanion } = useDashboard();
+  const { setSelectedTrip, setChatCompanion, updatedTripIds } = useDashboard();
+  const isUpdated = updatedTripIds.has(trip.id);
 
   return (
     <motion.article
       initial={{ opacity: 0, x: -16 }}
-      animate={{ opacity: 1, x: 0 }}
+      animate={{
+        opacity: 1,
+        x: 0,
+        boxShadow: isUpdated
+          ? "0 0 30px rgba(20, 184, 166, 0.25)"
+          : "0 0 0px rgba(0,0,0,0)",
+      }}
       transition={{ duration: 0.4, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -2 }}
-      className="group rounded-2xl border border-white/10 bg-[#1E293B]/50 p-5 transition-all hover:border-[#14B8A6]/30 hover:shadow-lg hover:shadow-teal-500/5"
+      className={cn(
+        "group rounded-2xl border bg-[#1E293B]/50 p-5 transition-all hover:shadow-lg hover:shadow-teal-500/5",
+        isUpdated
+          ? "border-[#14B8A6]/50 ring-1 ring-[#14B8A6]/30"
+          : "border-white/10 hover:border-[#14B8A6]/30"
+      )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -80,6 +95,16 @@ function TripCard({ trip, index }: { trip: Trip; index: number }) {
         </span>
         <span className="font-semibold text-[#14B8A6]">{trip.matchScore}% match</span>
       </div>
+
+      {trip.liveLocation?.label && (
+        <div className="mt-3 flex items-center gap-2 rounded-lg border border-[#14B8A6]/20 bg-[#14B8A6]/5 px-3 py-2 text-xs text-[#14B8A6]">
+          <Navigation className="size-3.5 shrink-0 animate-pulse" aria-hidden />
+          <span>
+            <MapPin className="mr-1 inline size-3" aria-hidden />
+            {trip.liveLocation.label}
+          </span>
+        </div>
+      )}
 
       <div className="mt-4 flex gap-2">
         <Button

@@ -34,6 +34,9 @@ CREATE TABLE IF NOT EXISTS trips (
   passengers INT DEFAULT 1,
   match_score INT DEFAULT 90,
   vehicle TEXT,
+  location_label TEXT,
+  driver_lat DOUBLE PRECISION,
+  driver_lng DOUBLE PRECISION,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -96,6 +99,7 @@ CREATE INDEX IF NOT EXISTS idx_notif_user ON notifications(user_id);
 ALTER PUBLICATION supabase_realtime ADD TABLE trips;
 ALTER PUBLICATION supabase_realtime ADD TABLE matches;
 ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
+ALTER PUBLICATION supabase_realtime ADD TABLE chat_messages;
 
 -- RLS: Clerk JWT sub claim maps to clerk_id
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
