@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { NextFetchEvent, NextRequest } from "next/server";
 import {
   clerkMiddleware,
   createRouteMatcher,
@@ -17,18 +18,27 @@ const isPublicRoute = createRouteMatcher([
 
 const isProtectedRoute = createRouteMatcher(["/dashboard(.*)", "/api/vex-ai"]);
 
-/** Protect dashboard when Clerk is configured; allow open access in mock-only dev mode. */
-export default clerkMiddleware(async (auth, req) => {
-  if (!isClerkConfigured()) {
-    return NextResponse.next();
-  }
+/** Demo mode: skip Clerk entirely — clerkMiddleware throws without a publishable key. */
+function demoMiddleware(_req: NextRequest) {
+  return NextResponse.next();
+}
 
+const clerkAuthMiddleware = clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req) && !isPublicRoute(req)) {
     await auth.protect();
   }
 
   return NextResponse.next();
 });
+
+/** Protect dashboard when Clerk is configured; allow open access in demo mode. */
+export default function middleware(req: NextRequest, event: NextFetchEvent) {
+  if (!isClerkConfigured()) {
+    return demoMiddleware(req);
+  }
+
+  return clerkAuthMiddleware(req, event);
+}
 
 export const config = {
   matcher: [
