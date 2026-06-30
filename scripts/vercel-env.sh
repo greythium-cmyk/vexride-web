@@ -3,7 +3,7 @@
 #
 # Prerequisites:
 #   npm i -g vercel@latest
-#   cd vexride && vercel link
+#   vercel link
 #
 # Usage:
 #   ./scripts/vercel-env.sh checklist          # where to get each value
@@ -248,8 +248,8 @@ cmd_doctor() {
     ok "Ruta / (page.tsx) existe"
   fi
 
-  if [[ -f "$APP_ROOT/../package.json" ]] && [[ ! -f "$APP_ROOT/package.json" ]]; then
-    warn "El repo tiene package.json en la raíz — en Vercel configura Root Directory = vexride"
+  if [[ ! -f "$APP_ROOT/package.json" ]]; then
+    fail "No hay package.json en la raíz del repositorio"
     issues=$((issues + 1))
   fi
 
@@ -264,7 +264,7 @@ cmd_doctor() {
   echo ""
   info "Checklist Vercel Dashboard:"
   cat <<'EOF'
-  • Settings → General → Root Directory = vexride  (sin barra final)
+  • Settings → General → Root Directory vacío (raíz del repo, sin subcarpeta)
   • Framework Preset = Next.js
   • Node.js Version = 20.x
   • Tras cambiar Root Directory → Redeploy (no solo Retry)

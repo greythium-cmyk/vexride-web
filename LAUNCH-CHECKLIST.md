@@ -11,7 +11,7 @@ Usa esta checklist para el primer deploy y go-live.
 
 ### Código y build
 
-- [ ] `cd vexride && npm install`
+- [ ] `npm install`
 - [ ] `npm run build` — sin errores TypeScript
 - [ ] `npm run lint` — sin errores críticos
 - [ ] Probar modo demo local **sin** `.env.local`:
@@ -34,7 +34,7 @@ Usa esta checklist para el primer deploy y go-live.
 ### Proyecto
 
 - [ ] Import repo en [Vercel](https://vercel.com)
-- [ ] **Root Directory:** `vexride`
+- [ ] **Root Directory:** vacío (raíz del repositorio)
 - [ ] Framework: Next.js (auto-detect)
 - [ ] Node.js 20+
 
