@@ -9,42 +9,19 @@ import {
   Star,
   TrendingUp,
 } from "lucide-react";
-import { historySummary, monthlyStats } from "@/lib/mock-data";
-
-function BarChart({
-  data,
-  dataKey,
-  color,
-}: {
-  data: typeof monthlyStats;
-  dataKey: "savings" | "trips";
-  color: string;
-}) {
-  const max = Math.max(...data.map((d) => d[dataKey]));
-
-  return (
-    <div className="flex h-40 items-end justify-between gap-2 pt-4">
-      {data.map((item, i) => {
-        const height = (item[dataKey] / max) * 100;
-        return (
-          <div key={item.month} className="flex flex-1 flex-col items-center gap-2">
-            <motion.div
-              initial={{ height: 0 }}
-              whileInView={{ height: `${height}%` }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.05 }}
-              className={`w-full max-w-8 rounded-t-lg ${color}`}
-              style={{ minHeight: 4 }}
-            />
-            <span className="text-[10px] text-slate-500">{item.month}</span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+import { useDashboard } from "@/components/dashboard/dashboard-context";
+import { ProfessionalBarChart } from "@/components/dashboard/ui/pro-chart";
+import { StatCardSkeleton, ChartSkeleton } from "@/components/dashboard/ui/skeletons";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function StatsHistory() {
+  const { data, loading } = useDashboard();
+  const { historySummary, monthlyStats } = data;
+
   const summaryCards = [
     {
       icon: Car,
@@ -52,6 +29,7 @@ export function StatsHistory() {
       value: historySummary.totalTrips,
       color: "text-[#14B8A6]",
       bg: "bg-[#14B8A6]/10",
+      tip: "Total histórico de carpools",
     },
     {
       icon: DollarSign,
@@ -59,6 +37,7 @@ export function StatsHistory() {
       value: `$${historySummary.totalSavings}`,
       color: "text-[#22D3EE]",
       bg: "bg-[#22D3EE]/10",
+      tip: "Ahorro acumulado vs transporte solo",
     },
     {
       icon: Leaf,
@@ -66,6 +45,7 @@ export function StatsHistory() {
       value: `${historySummary.totalCo2} kg`,
       color: "text-[#14B8A6]",
       bg: "bg-[#14B8A6]/10",
+      tip: "Impacto ambiental positivo",
     },
     {
       icon: Star,
@@ -73,15 +53,33 @@ export function StatsHistory() {
       value: historySummary.avgRating,
       color: "text-amber-400",
       bg: "bg-amber-500/10",
+      tip: "Tu reputación como pasajero",
     },
   ];
 
+  if (loading) {
+    return (
+      <section id="estadisticas" aria-busy="true">
+        <div className="mb-5 h-6 w-48 animate-pulse rounded bg-white/10" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <StatCardSkeleton key={i} />
+          ))}
+        </div>
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <ChartSkeleton />
+          <ChartSkeleton />
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section id="estadisticas">
+    <section id="estadisticas" aria-labelledby="stats-heading">
       <div className="mb-5 flex items-center gap-2">
-        <TrendingUp className="size-5 text-[#14B8A6]" />
+        <TrendingUp className="size-5 text-[#14B8A6]" aria-hidden />
         <div>
-          <h2 className="text-lg font-semibold text-white">
+          <h2 id="stats-heading" className="text-lg font-semibold text-white">
             Estadísticas e Historial
           </h2>
           <p className="text-sm text-slate-400">Tu impacto en los últimos 6 meses</p>
@@ -90,22 +88,27 @@ export function StatsHistory() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {summaryCards.map((card, i) => (
-          <motion.div
-            key={card.label}
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.08 }}
-            className="rounded-2xl border border-white/10 bg-[#1E293B]/50 p-4"
-          >
-            <div
-              className={`flex size-9 items-center justify-center rounded-lg ${card.bg}`}
+          <Tooltip key={card.label}>
+            <TooltipTrigger
+              render={
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08 }}
+                  whileHover={{ y: -2 }}
+                  className="rounded-2xl border border-white/10 bg-[#1E293B]/50 p-4 transition-colors hover:border-[#14B8A6]/20"
+                />
+              }
             >
-              <card.icon className={`size-4 ${card.color}`} />
-            </div>
-            <p className="mt-3 text-2xl font-bold text-white">{card.value}</p>
-            <p className="text-xs text-slate-400">{card.label}</p>
-          </motion.div>
+              <div className={`flex size-9 items-center justify-center rounded-lg ${card.bg}`}>
+                <card.icon className={`size-4 ${card.color}`} aria-hidden />
+              </div>
+              <p className="mt-3 text-2xl font-bold text-white">{card.value}</p>
+              <p className="text-xs text-slate-400">{card.label}</p>
+            </TooltipTrigger>
+            <TooltipContent>{card.tip}</TooltipContent>
+          </Tooltip>
         ))}
       </div>
 
@@ -116,14 +119,17 @@ export function StatsHistory() {
           viewport={{ once: true }}
           className="rounded-2xl border border-white/10 bg-[#1E293B]/50 p-5"
         >
-          <div className="flex items-center justify-between">
+          <div className="mb-2 flex items-center justify-between">
             <h3 className="font-medium text-white">Ahorro mensual ($)</h3>
-            <Award className="size-4 text-[#14B8A6]" />
+            <Award className="size-4 text-[#14B8A6]" aria-hidden />
           </div>
-          <BarChart
+          <ProfessionalBarChart
             data={monthlyStats}
             dataKey="savings"
-            color="bg-gradient-to-t from-[#14B8A6] to-[#14B8A6]/40"
+            valuePrefix="$"
+            gradientFrom="#14B8A6"
+            gradientTo="rgba(20,184,166,0.35)"
+            ariaLabel="Gráfico de ahorro mensual en dólares"
           />
         </motion.div>
 
@@ -134,14 +140,16 @@ export function StatsHistory() {
           transition={{ delay: 0.1 }}
           className="rounded-2xl border border-white/10 bg-[#1E293B]/50 p-5"
         >
-          <div className="flex items-center justify-between">
+          <div className="mb-2 flex items-center justify-between">
             <h3 className="font-medium text-white">Viajes completados</h3>
-            <Car className="size-4 text-[#22D3EE]" />
+            <Car className="size-4 text-[#22D3EE]" aria-hidden />
           </div>
-          <BarChart
+          <ProfessionalBarChart
             data={monthlyStats}
             dataKey="trips"
-            color="bg-gradient-to-t from-[#22D3EE] to-[#22D3EE]/40"
+            gradientFrom="#22D3EE"
+            gradientTo="rgba(34,211,238,0.35)"
+            ariaLabel="Gráfico de viajes completados por mes"
           />
         </motion.div>
       </div>

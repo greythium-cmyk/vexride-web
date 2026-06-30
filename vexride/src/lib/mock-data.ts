@@ -1,57 +1,36 @@
-export type TripStatus = "confirmed" | "pending" | "in-progress" | "completed";
+/**
+ * Mock data — used as fallback when Supabase is not configured or empty.
+ * Types live in @/lib/types/dashboard.
+ */
+export type {
+  TripStatus,
+  Trip,
+  MatchSuggestion,
+  ChatMessage,
+  MonthlyStat,
+  QuickStats,
+  HistorySummary,
+  DashboardUser,
+  Notification,
+  DashboardData,
+  MatchBreakdown,
+} from "@/lib/types/dashboard";
 
-export interface Trip {
-  id: string;
-  driver: {
-    name: string;
-    avatar: string;
-    rating: number;
-    premium: boolean;
-  };
-  route: {
-    from: string;
-    to: string;
-  };
-  date: string;
-  time: string;
-  status: TripStatus;
-  passengers: number;
-  matchScore: number;
-  vehicle?: string;
-}
+export {
+  statusLabels,
+  statusColors,
+} from "@/lib/types/dashboard";
 
-export interface MatchSuggestion {
-  id: string;
-  driver: {
-    name: string;
-    avatar: string;
-    rating: number;
-    premium: boolean;
-  };
-  route: {
-    from: string;
-    to: string;
-  };
-  time: string;
-  matchScore: number;
-  savings: string;
-  co2Saved: string;
-}
+import type {
+  Trip,
+  MatchSuggestion,
+  ChatMessage,
+  MonthlyStat,
+  DashboardUser,
+  Notification,
+} from "@/lib/types/dashboard";
 
-export interface ChatMessage {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: string;
-}
-
-export interface MonthlyStat {
-  month: string;
-  savings: number;
-  trips: number;
-}
-
-export const currentUser = {
+export const currentUser: DashboardUser = {
   name: "Alex Rivera",
   email: "alex.rivera@email.com",
   avatar: "AR",
@@ -81,6 +60,9 @@ export const activeTrips: Trip[] = [
     passengers: 3,
     matchScore: 97,
     vehicle: "Toyota Camry 2023",
+    estimatedDuration: "35 min",
+    pickupPoint: "Corner Henry & Atlantic Ave",
+    matchBreakdown: { schedule: 99, route: 96, preferences: 94, history: 98 },
   },
   {
     id: "trip-2",
@@ -92,6 +74,9 @@ export const activeTrips: Trip[] = [
     passengers: 2,
     matchScore: 99,
     vehicle: "Mercedes E-Class 2024",
+    estimatedDuration: "42 min",
+    pickupPoint: "Queens Blvd Station",
+    matchBreakdown: { schedule: 100, route: 98, preferences: 97, history: 99 },
   },
   {
     id: "trip-3",
@@ -103,6 +88,9 @@ export const activeTrips: Trip[] = [
     passengers: 4,
     matchScore: 94,
     vehicle: "Honda Accord 2022",
+    estimatedDuration: "38 min",
+    pickupPoint: "Grove Street PATH",
+    matchBreakdown: { schedule: 92, route: 95, preferences: 91, history: 96 },
   },
 ];
 
@@ -155,16 +143,22 @@ export const vexAIInitialMessages: ChatMessage[] = [
   },
 ];
 
-export const vexAIResponses: Record<string, string> = {
-  default:
-    "Entendido. Estoy analizando tu calendario y rutas habituales para encontrar la mejor opción. ¿Quieres que busque un Premium Driver?",
-  viaje:
-    "Tu próximo viaje es mañana a las 8:15 AM con María G. Ruta: Brooklyn Heights → Midtown. Match al 97%. ¿Activo Modo Trabajo?",
-  match:
-    "Encontré 4 matches disponibles para esta semana. El mejor es Sofia K. (98% match, Premium Driver) a las 8:25 AM. ¿Te uno?",
-  ahorro:
-    "Este mes has ahorrado $247 y reducido 18.4 kg de CO₂. ¡Vas 23% mejor que el mes pasado!",
-};
+export const vexAIChatHistory: ChatMessage[] = [
+  ...vexAIInitialMessages,
+  {
+    id: "msg-2",
+    role: "user",
+    content: "¿Cuál es mi próximo viaje?",
+    timestamp: "Ayer, 18:30",
+  },
+  {
+    id: "msg-3",
+    role: "assistant",
+    content:
+      "Tu próximo viaje es mañana a las 8:15 AM con María G. Ruta: Brooklyn Heights → Midtown. Match al 97%.",
+    timestamp: "Ayer, 18:30",
+  },
+];
 
 export const monthlyStats: MonthlyStat[] = [
   { month: "Ene", savings: 120, trips: 8 },
@@ -182,7 +176,7 @@ export const historySummary = {
   avgRating: 4.8,
 };
 
-export const notifications = [
+export const notifications: Notification[] = [
   {
     id: "n1",
     title: "Match confirmado",
@@ -239,17 +233,3 @@ export const navItems = [
     icon: "Settings" as const,
   },
 ];
-
-export const statusLabels: Record<TripStatus, string> = {
-  confirmed: "Confirmado",
-  pending: "Pendiente",
-  "in-progress": "En curso",
-  completed: "Completado",
-};
-
-export const statusColors: Record<TripStatus, string> = {
-  confirmed: "bg-[#14B8A6]/20 text-[#14B8A6] border-[#14B8A6]/30",
-  pending: "bg-[#22D3EE]/20 text-[#22D3EE] border-[#22D3EE]/30",
-  "in-progress": "bg-amber-500/20 text-amber-400 border-amber-500/30",
-  completed: "bg-slate-500/20 text-slate-400 border-slate-500/30",
-};
