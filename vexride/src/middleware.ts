@@ -7,10 +7,12 @@ import { isClerkConfigured } from "@/lib/env";
 
 const isPublicRoute = createRouteMatcher([
   "/",
+  "/pricing",
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/api/webhooks(.*)",
   "/api/health(.*)",
+  "/api/stripe/checkout",
 ]);
 
 const isProtectedRoute = createRouteMatcher(["/dashboard(.*)", "/api/vex-ai"]);

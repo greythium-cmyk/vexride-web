@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { PullToRefresh } from "@/components/dashboard/pull-to-refresh";
 import { RealtimeSyncBanner } from "@/components/dashboard/realtime-sync-banner";
 import { SupabaseFallbackBanner } from "@/components/dashboard/supabase-fallback-banner";
@@ -11,9 +14,24 @@ import { StatsHistory } from "@/components/dashboard/stats-history";
 import { SettingsSection } from "@/components/dashboard/settings-section";
 import { useDashboard } from "@/components/dashboard/dashboard-context";
 import { showRefreshToast } from "@/lib/realtime/realtime-toasts";
+import { useSubscription } from "@/hooks/use-subscription";
+import { normalizePlanId, type PlanId } from "@/lib/subscription/plans";
 
 export function DashboardContent() {
   const { reload } = useDashboard();
+  const { simulateSubscription } = useSubscription({ planName: "Free" });
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const checkout = searchParams.get("checkout");
+    const plan = searchParams.get("plan");
+    if (checkout === "success" && plan) {
+      const planId = normalizePlanId(plan) as PlanId;
+      simulateSubscription(planId);
+      toast.success("¡Suscripción activada!", { description: `Plan ${planId} confirmado.` });
+      window.history.replaceState({}, "", "/dashboard");
+    }
+  }, [searchParams, simulateSubscription]);
 
   const handleRefresh = async () => {
     await reload();

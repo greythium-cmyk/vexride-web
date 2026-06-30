@@ -7,13 +7,27 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useDashboard } from "@/components/dashboard/dashboard-context";
 import { cn } from "@/lib/utils";
+import { useSubscription } from "@/hooks/use-subscription";
+import { toast } from "sonner";
 import { MatchRowSkeleton } from "@/components/dashboard/ui/skeletons";
 import { LiveHighlight } from "@/components/dashboard/ui/live-highlight";
 import { EmptyState } from "@/components/dashboard/ui/empty-state";
 
 export function AvailableMatches() {
   const { data, loading, joinedMatchIds, joinMatch, setShowNewCarpoolModal, setNewCarpoolMode, newMatchIds } = useDashboard();
+  const { hasFeature } = useSubscription({ planName: data.user.plan });
   const matches = data.availableMatches.filter((m) => !joinedMatchIds.has(m.id));
+
+  const handleJoin = (match: (typeof data.availableMatches)[0]) => {
+    if (match.driver.premium && !hasFeature("premium_drivers")) {
+      toast.error("Premium Driver requiere plan Pro", {
+        description: "Actualiza tu plan para unirte a conductores premium.",
+        action: { label: "Ver planes", onClick: () => { window.location.href = "/pricing"; } },
+      });
+      return;
+    }
+    joinMatch(match);
+  };
 
   return (
     <section id="matches" aria-labelledby="matches-heading">
@@ -115,7 +129,7 @@ export function AvailableMatches() {
                     <Button
                       size="sm"
                       className="w-full sm:w-auto min-h-10 bg-gradient-vex font-semibold text-[#0F172A] hover:opacity-90 focus-visible:ring-[#14B8A6]/50"
-                      onClick={() => joinMatch(match)}
+                      onClick={() => handleJoin(match)}
                     >
                       <Users className="size-4" aria-hidden />
                       Unirme

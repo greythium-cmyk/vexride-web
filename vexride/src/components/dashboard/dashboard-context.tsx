@@ -176,8 +176,6 @@ function DashboardProviderInner({ children }: { children: ReactNode }) {
             clerkUser.firstName && clerkUser.lastName
               ? `${clerkUser.firstName[0]}${clerkUser.lastName[0]}`
               : currentUser.avatar,
-          plan: currentUser.plan,
-          rating: currentUser.rating,
         }
       : null;
 
@@ -186,7 +184,15 @@ function DashboardProviderInner({ children }: { children: ReactNode }) {
         const remote = await fetchDashboardData(supabase, clerkUser.id);
         if (remote) {
           const { profileId: pid, ...dashboard } = remote;
-          setData({ ...dashboard, user: clerkProfile ?? dashboard.user });
+          setData({
+            ...dashboard,
+            user: {
+              ...dashboard.user,
+              name: clerkProfile?.name ?? dashboard.user.name,
+              email: clerkProfile?.email ?? dashboard.user.email,
+              avatar: clerkProfile?.avatar ?? dashboard.user.avatar,
+            },
+          });
           setProfileId(pid);
           setSource("supabase");
           setLoading(false);
@@ -198,7 +204,12 @@ function DashboardProviderInner({ children }: { children: ReactNode }) {
       }
     }
 
-    setData({ ...MOCK_DATA, user: clerkProfile ?? MOCK_DATA.user });
+    setData({
+      ...MOCK_DATA,
+      user: clerkProfile
+        ? { ...MOCK_DATA.user, ...clerkProfile }
+        : MOCK_DATA.user,
+    });
     setProfileId(null);
     setSource("mock");
     setLoading(false);

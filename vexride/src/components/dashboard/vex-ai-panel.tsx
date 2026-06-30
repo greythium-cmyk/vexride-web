@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { useDashboard } from "@/components/dashboard/dashboard-context";
+import { useSubscription } from "@/hooks/use-subscription";
 import { VexAISkeleton } from "@/components/dashboard/ui/skeletons";
 import { useTypingEffect } from "@/hooks/use-typing-effect";
 import { buildVexAIResponse, VEX_AI_SUGGESTED_PROMPTS } from "@/lib/vex-ai/responses";
@@ -65,6 +66,7 @@ function AssistantBubble({
 
 export function VexAIPanel() {
   const { data, loading } = useDashboard();
+  const { hasFeature, planLabel, isPro } = useSubscription({ planName: data.user.plan });
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -113,32 +115,44 @@ export function VexAIPanel() {
       let responseText: string;
 
       try {
-        const res = await fetch("/api/vex-ai", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: [...messages, userMsg].map((m) => ({
-              role: m.role,
-              content: m.content,
-            })),
-            context: {
+        const useStreaming = hasFeature("vex_ai_priority");
+        if (useStreaming) {
+          const res = await fetch("/api/vex-ai", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              messages: [...messages, userMsg].map((m) => ({
+                role: m.role,
+                content: m.content,
+              })),
+              context: {
+                userName: data.user.name,
+                data: {
+                  quickStats: data.quickStats,
+                  activeTrips: data.activeTrips,
+                  availableMatches: data.availableMatches,
+                },
+              },
+            }),
+          });
+
+          if (res.ok && res.headers.get("content-type")?.includes("text/plain")) {
+            const raw = await res.text();
+            responseText = raw
+              .split("\n")
+              .filter((l) => l.startsWith("0:"))
+              .map((l) => JSON.parse(l.slice(2)))
+              .join("");
+          } else {
+            responseText = buildVexAIResponse(text, {
               userName: data.user.name,
               data: {
                 quickStats: data.quickStats,
                 activeTrips: data.activeTrips,
                 availableMatches: data.availableMatches,
               },
-            },
-          }),
-        });
-
-        if (res.ok && res.headers.get("content-type")?.includes("text/plain")) {
-          const raw = await res.text();
-          responseText = raw
-            .split("\n")
-            .filter((l) => l.startsWith("0:"))
-            .map((l) => JSON.parse(l.slice(2)))
-            .join("");
+            });
+          }
         } else {
           responseText = buildVexAIResponse(text, {
             userName: data.user.name,
@@ -175,7 +189,7 @@ export function VexAIPanel() {
       setLastAnimatedId(aiId);
       setIsTyping(false);
     },
-    [isTyping, messages, data]
+    [isTyping, messages, data, hasFeature]
   );
 
   if (loading) {
@@ -211,12 +225,12 @@ export function VexAIPanel() {
                 Vex AI 24/7
               </h2>
               <Badge className="border-[#22D3EE]/30 bg-[#22D3EE]/10 text-[10px] text-[#22D3EE]">
-                Pro
+                {planLabel}
               </Badge>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-[#14B8A6]">
               <span className="size-1.5 animate-pulse rounded-full bg-[#14B8A6]" aria-hidden />
-              Prioridad Pro — Siempre activo
+              {isPro ? "Prioridad Pro — Siempre activo" : "Modo básico — actualiza a Pro"}
             </div>
           </div>
           <button

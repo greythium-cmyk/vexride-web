@@ -34,7 +34,7 @@ export const currentUser: DashboardUser = {
   name: "Alex Rivera",
   email: "alex.rivera@email.com",
   avatar: "AR",
-  plan: "Pro",
+  plan: "Free",
   rating: 4.8,
 };
 
@@ -63,6 +63,7 @@ export const activeTrips: Trip[] = [
     estimatedDuration: "35 min",
     pickupPoint: "Corner Henry & Atlantic Ave",
     matchBreakdown: { schedule: 99, route: 96, preferences: 94, history: 98 },
+    liveLocation: { label: "Atlantic Ave & Hicks St", lat: 40.688, lng: -73.986 },
   },
   {
     id: "trip-2",

@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { navItems } from "@/lib/mock-data";
 import { useDashboard } from "@/components/dashboard/dashboard-context";
 import { isClerkConfigured } from "@/lib/env";
+import { useSubscription } from "@/hooks/use-subscription";
 
 const iconMap = { Home, Car, Users, Bot, BarChart3, Settings };
 
@@ -30,6 +31,7 @@ interface SidebarProps {
 export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
   const { data, source } = useDashboard();
+  const { planLabel, isPro } = useSubscription({ planName: data.user.plan });
 
   const content = (
     <>
@@ -41,7 +43,7 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
           <div>
             <span className="text-base font-bold text-white">Vexride</span>
             <Badge className="ml-2 border-[#14B8A6]/30 bg-[#14B8A6]/10 px-1.5 py-0 text-[10px] text-[#14B8A6]">
-              {data.user.plan}
+              {planLabel}
             </Badge>
           </div>
         </Link>
@@ -89,8 +91,10 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
 
       <div className="border-t border-white/10 p-4">
         <div className="rounded-xl border border-[#14B8A6]/20 bg-[#14B8A6]/5 p-4">
-          <p className="text-xs font-medium text-[#14B8A6]">Plan {data.user.plan} activo</p>
-          <p className="mt-1 text-xs text-slate-400">Vex AI prioritario 24/7</p>
+          <p className="text-xs font-medium text-[#14B8A6]">Plan {planLabel} activo</p>
+          <p className="mt-1 text-xs text-slate-400">
+            {isPro ? "Vex AI prioritario 24/7" : "Actualiza a Pro para IA avanzada"}
+          </p>
           <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
             <div className="h-full w-3/4 rounded-full bg-gradient-vex transition-all duration-700" />
           </div>

@@ -6,7 +6,6 @@ import {
   Clock,
   MapPin,
   MessageCircle,
-  Navigation,
   Phone,
   Share2,
   Star,
@@ -25,43 +24,13 @@ import { Separator } from "@/components/ui/separator";
 import { useDashboard } from "@/components/dashboard/dashboard-context";
 import { StatusBadge } from "@/components/dashboard/ui/status-badge";
 import { MatchBreakdownChart } from "@/components/dashboard/ui/match-breakdown";
-
-function MapPlaceholder({ from, to }: { from: string; to: string }) {
-  return (
-    <div className="relative overflow-hidden rounded-xl border border-white/10 bg-[#0F172A]">
-      <div className="absolute inset-0 grid-pattern opacity-50" />
-      <div className="relative flex h-36 flex-col items-center justify-center gap-2 p-4">
-        <Navigation className="size-8 text-[#14B8A6]/50" aria-hidden />
-        <div className="text-center">
-          <p className="text-xs text-slate-500">Vista de ruta</p>
-          <p className="mt-1 text-sm font-medium text-white">
-            {from} → {to}
-          </p>
-        </div>
-        <div className="absolute left-4 top-4 size-2 rounded-full bg-[#14B8A6] shadow-lg shadow-teal-500/50" />
-        <div className="absolute bottom-4 right-4 size-2 rounded-full bg-[#22D3EE] shadow-lg shadow-cyan-500/50" />
-        <svg className="absolute inset-0 h-full w-full" aria-hidden>
-          <path
-            d="M 40 40 Q 120 80 200 100"
-            fill="none"
-            stroke="url(#routeGrad)"
-            strokeWidth="2"
-            strokeDasharray="6 4"
-          />
-          <defs>
-            <linearGradient id="routeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#14B8A6" />
-              <stop offset="100%" stopColor="#22D3EE" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-    </div>
-  );
-}
+import { TripRouteMap } from "@/components/dashboard/trip-route-map";
+import { PlanGate } from "@/components/subscription/plan-gate";
+import { useSubscription } from "@/hooks/use-subscription";
 
 export function TripDetailModal() {
-  const { selectedTrip, setSelectedTrip, setChatCompanion } = useDashboard();
+  const { selectedTrip, setSelectedTrip, setChatCompanion, data } = useDashboard();
+  const { hasFeature } = useSubscription({ planName: data.user.plan });
 
   if (!selectedTrip) return null;
 
@@ -102,12 +71,23 @@ export function TripDetailModal() {
             <StatusBadge status={trip.status} pulse={trip.status === "in-progress"} />
           </div>
 
-          <MapPlaceholder from={trip.route.from} to={trip.route.to} />
-
-          <MatchBreakdownChart
-            breakdown={trip.matchBreakdown}
-            totalScore={trip.matchScore}
+          <TripRouteMap
+            from={trip.route.from}
+            to={trip.route.to}
+            pickupPoint={trip.pickupPoint}
+            liveLocation={trip.liveLocation}
           />
+
+          <PlanGate
+            allowed={hasFeature("match_breakdown")}
+            requiredPlan="starter"
+            featureLabel="Desglose de match IA"
+          >
+            <MatchBreakdownChart
+              breakdown={trip.matchBreakdown}
+              totalScore={trip.matchScore}
+            />
+          </PlanGate>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-white/10 bg-white/5 p-3">
