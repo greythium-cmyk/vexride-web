@@ -76,7 +76,7 @@ export function PricingPlans({
         </div>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-6 pb-12 md:grid-cols-2 xl:grid-cols-4">
         {PLANS.map((plan, i) => {
           const Icon = icons[plan.id];
           const isCurrent = planId === plan.id;
@@ -88,11 +88,13 @@ export function PricingPlans({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
+              className={cn("h-full", plan.popular && "pt-4")}
             >
               <Card
                 className={cn(
-                  "relative flex h-full flex-col border-white/10 bg-[#1E293B]/60 backdrop-blur",
-                  plan.popular && "border-[#14B8A6]/40 shadow-lg shadow-teal-500/10",
+                  "relative flex h-full flex-col justify-between border-white/10 bg-[#1E293B]/60 backdrop-blur",
+                  plan.popular &&
+                    "overflow-visible border-[#14B8A6]/40 shadow-lg shadow-teal-500/10",
                   isCurrent && "ring-1 ring-[#14B8A6]/40"
                 )}
               >
@@ -122,7 +124,7 @@ export function PricingPlans({
                     ))}
                   </ul>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="shrink-0">
                   <Button
                     className={cn(
                       "w-full font-semibold",

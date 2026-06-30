@@ -118,7 +118,7 @@ export function Pricing() {
           </p>
         </motion.div>
 
-        <div className="mt-16 grid gap-6 lg:grid-cols-4">
+        <div className="mt-16 grid gap-6 pb-12 lg:grid-cols-4">
           {plans.map((plan, i) => (
             <motion.div
               key={plan.name}
@@ -126,13 +126,16 @@ export function Pricing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className={cn(plan.popular && "lg:-mt-4 lg:mb-4")}
+              className={cn(
+                "h-full",
+                plan.popular && "pt-4 lg:-mt-4 lg:mb-4 lg:pt-0"
+              )}
             >
               <Card
                 className={cn(
-                  "relative h-full border-white/10 bg-[#1E293B]/50 backdrop-blur-sm transition-all hover:border-[#14B8A6]/30",
+                  "relative flex h-full flex-col justify-between border-white/10 bg-[#1E293B]/50 backdrop-blur-sm transition-all hover:border-[#14B8A6]/30",
                   plan.popular &&
-                    "border-[#14B8A6]/40 bg-[#1E293B]/80 shadow-xl shadow-teal-500/10 glow-teal"
+                    "overflow-visible border-[#14B8A6]/40 bg-[#1E293B]/80 shadow-xl shadow-teal-500/10 glow-teal"
                 )}
               >
                 {plan.popular && (
@@ -175,7 +178,7 @@ export function Pricing() {
                   </CardDescription>
                 </CardHeader>
 
-                <CardContent>
+                <CardContent className="flex-1">
                   <ul className="space-y-3">
                     {plan.features.map((feature) => (
                       <li
@@ -194,7 +197,7 @@ export function Pricing() {
                   </ul>
                 </CardContent>
 
-                <CardFooter className="mt-auto">
+                <CardFooter className="mt-auto shrink-0">
                   <Button
                     className={cn(
                       "w-full font-semibold",
