@@ -1,34 +1,12 @@
 "use client";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { RealtimeSyncBanner } from "@/components/dashboard/realtime-sync-banner";
-import { WelcomeStats } from "@/components/dashboard/welcome-stats";
-import { ActiveTrips } from "@/components/dashboard/active-trips";
-import { AvailableMatches } from "@/components/dashboard/available-matches";
-import { VexAIPanel } from "@/components/dashboard/vex-ai-panel";
-import { StatsHistory } from "@/components/dashboard/stats-history";
-import { SettingsSection } from "@/components/dashboard/settings-section";
+import { DashboardContent } from "@/components/dashboard/dashboard-content";
 
 export default function DashboardPage() {
   return (
     <DashboardShell>
-      <div className="mx-auto max-w-7xl space-y-8">
-        <RealtimeSyncBanner />
-        <WelcomeStats />
-
-        <div className="grid gap-8 xl:grid-cols-5">
-          <div className="space-y-8 xl:col-span-3">
-            <ActiveTrips />
-            <AvailableMatches />
-          </div>
-          <div className="xl:col-span-2 xl:sticky xl:top-24 xl:self-start">
-            <VexAIPanel />
-          </div>
-        </div>
-
-        <StatsHistory />
-        <SettingsSection />
-      </div>
+      <DashboardContent />
     </DashboardShell>
   );
 }

@@ -1,0 +1,27 @@
+{
+  "name": "Vexride — Carpooling Inteligente",
+  "short_name": "Vexride",
+  "description": "Plataforma predictiva de carpooling para traslados laborales con Vex AI y Realtime.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0F172A",
+  "theme_color": "#14B8A6",
+  "lang": "es",
+  "categories": ["travel", "productivity"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -128,4 +128,17 @@
       linear-gradient(90deg, rgba(20, 184, 166, 0.05) 1px, transparent 1px);
     background-size: 64px 64px;
   }
+
+  .live-highlight {
+    animation: live-highlight-fade 2.2s ease-out forwards;
+  }
+
+  @keyframes live-highlight-fade {
+    0% {
+      filter: brightness(1.08);
+    }
+    100% {
+      filter: brightness(1);
+    }
+  }
 }

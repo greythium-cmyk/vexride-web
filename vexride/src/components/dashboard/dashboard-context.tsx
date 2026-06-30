@@ -54,7 +54,8 @@ interface DashboardContextValue {
   updatedTripIds: Set<string>;
   newMatchIds: Set<string>;
   newNotificationIds: Set<string>;
-  reload: () => void;
+  reload: () => Promise<void>;
+  triggerDemoChange: () => void;
   selectedTrip: Trip | null;
   setSelectedTrip: (trip: Trip | null) => void;
   chatCompanion: { name: string; avatar: string } | null;
@@ -79,7 +80,7 @@ function useSharedDashboardState(
   loading: boolean,
   source: DataSource,
   error: string | null,
-  reload: () => void,
+  reload: () => Promise<void>,
   profileId: string | null,
   supabase: SupabaseClient<Database> | null,
   persistJoinMatch: (id: string) => void
@@ -100,6 +101,7 @@ function useSharedDashboardState(
     updatedTripIds,
     newMatchIds,
     newNotificationIds,
+    triggerDemoChange,
   } = useDashboardRealtime({
     supabase,
     profileId,
@@ -136,6 +138,7 @@ function useSharedDashboardState(
     newMatchIds,
     newNotificationIds,
     reload,
+    triggerDemoChange,
     selectedTrip,
     setSelectedTrip,
     chatCompanion,
@@ -243,7 +246,7 @@ function DashboardProviderMock({ children }: { children: ReactNode }) {
     false,
     "mock",
     null,
-    () => {},
+    async () => {},
     null,
     null,
     () => {}

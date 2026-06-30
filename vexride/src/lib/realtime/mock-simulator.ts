@@ -5,9 +5,14 @@ import {
   mockAddMatch,
   mockAddNotification,
 } from "@/lib/realtime/dashboard-handlers";
+import { showDemoSimulatedToast } from "@/lib/realtime/realtime-toasts";
 
 type SetData = Dispatch<SetStateAction<DashboardData>>;
 type OnHighlight = (type: "trip" | "match" | "notification", id: string) => void;
+type OnLiveEvent = (
+  type: "trip" | "match" | "notification",
+  payload: { title: string; description?: string }
+) => void;
 
 const DEMO_MATCHES: MatchSuggestion[] = [
   {
@@ -37,61 +42,105 @@ const LOCATION_UPDATES = [
   "Midtown tunnel exit",
 ];
 
+let manualMatchIndex = 0;
+let manualLocIndex = 0;
+
+/**
+ * Applies a single simulated realtime burst (for demo button or interval).
+ */
+export function applyMockRealtimeTick(
+  setData: SetData,
+  onHighlight: OnHighlight,
+  onLiveEvent?: OnLiveEvent,
+  options?: { includeMatch?: boolean; includeNotification?: boolean }
+): void {
+  const includeMatch = options?.includeMatch ?? manualMatchIndex % 3 === 0;
+  const includeNotification = options?.includeNotification ?? true;
+
+  setData((prev) => {
+    if (prev.activeTrips.length === 0) return prev;
+
+    const trip = prev.activeTrips[manualLocIndex % prev.activeTrips.length];
+    const statuses = ["confirmed", "in-progress", "pending"] as const;
+    const nextStatus = statuses[manualLocIndex % statuses.length];
+    const location = LOCATION_UPDATES[manualLocIndex % LOCATION_UPDATES.length];
+
+    manualLocIndex += 1;
+
+    onHighlight("trip", trip.id);
+    onLiveEvent?.("trip", {
+      title: "Viaje actualizado",
+      description: `${trip.route.from} → ${trip.route.to} · ${location}`,
+    });
+
+    return mockUpdateTrip(prev, trip.id, {
+      matchScore: Math.min(99, trip.matchScore + 1),
+      status: nextStatus,
+      liveLocation: { label: location },
+    });
+  });
+
+  if (includeMatch && manualMatchIndex < DEMO_MATCHES.length + 5) {
+    const match =
+      DEMO_MATCHES[manualMatchIndex % DEMO_MATCHES.length] ?? {
+        ...DEMO_MATCHES[0],
+        id: `demo-match-manual-${Date.now()}`,
+      };
+    manualMatchIndex += 1;
+    setData((prev) => mockAddMatch(prev, match));
+    onHighlight("match", match.id);
+    onLiveEvent?.("match", {
+      title: "Nuevo match disponible",
+      description: `${match.driver.name} · ${match.route.from} → ${match.route.to}`,
+    });
+  }
+
+  if (includeNotification) {
+    const id = `demo-notif-${Date.now()}`;
+    const notification: Notification = {
+      id,
+      title: "Actualización en vivo",
+      message: "Vexride detectó un cambio en tu ruta (modo demo)",
+      time: "Ahora",
+      unread: true,
+    };
+    setData((prev) => mockAddNotification(prev, notification));
+    onHighlight("notification", id);
+    onLiveEvent?.("notification", {
+      title: notification.title,
+      description: notification.message,
+    });
+  }
+}
+
+/** Manual trigger for demo presentations. */
+export function triggerDemoRealtimeChange(
+  setData: SetData,
+  onHighlight: OnHighlight
+): void {
+  applyMockRealtimeTick(setData, onHighlight, undefined, {
+    includeMatch: true,
+    includeNotification: true,
+  });
+  showDemoSimulatedToast();
+}
+
 /**
  * Simulates Supabase Realtime in demo mode with periodic updates.
  */
 export function startMockRealtimeSimulator(
   setData: SetData,
-  onHighlight: OnHighlight
+  onHighlight: OnHighlight,
+  onLiveEvent?: OnLiveEvent
 ): () => void {
-  let matchIndex = 0;
-  let locIndex = 0;
   let tick = 0;
 
   const interval = setInterval(() => {
     tick += 1;
-
-    setData((prev) => {
-      if (prev.activeTrips.length === 0) return prev;
-
-      const trip = prev.activeTrips[tick % prev.activeTrips.length];
-      const statuses = ["confirmed", "in-progress", "pending"] as const;
-      const nextStatus = statuses[tick % statuses.length];
-
-      let next = mockUpdateTrip(prev, trip.id, {
-        matchScore: Math.min(99, trip.matchScore + (tick % 2 === 0 ? 1 : 0)),
-        status: nextStatus,
-        liveLocation: {
-          label: LOCATION_UPDATES[locIndex % LOCATION_UPDATES.length],
-        },
-      });
-
-      locIndex += 1;
-      onHighlight("trip", trip.id);
-      return next;
+    applyMockRealtimeTick(setData, onHighlight, onLiveEvent, {
+      includeMatch: tick % 3 === 0,
+      includeNotification: tick % 4 === 0,
     });
-
-    // New match every 3 ticks (~45s)
-    if (tick % 3 === 0 && matchIndex < DEMO_MATCHES.length) {
-      const match = DEMO_MATCHES[matchIndex];
-      matchIndex += 1;
-      setData((prev) => mockAddMatch(prev, match));
-      onHighlight("match", match.id);
-    }
-
-    // Notification every 4 ticks (~60s)
-    if (tick % 4 === 0) {
-      const id = `demo-notif-${Date.now()}`;
-      const notification: Notification = {
-        id,
-        title: "Actualización en vivo",
-        message: "Vexride detectó un cambio en tu ruta (modo demo)",
-        time: "Ahora",
-        unread: true,
-      };
-      setData((prev) => mockAddNotification(prev, notification));
-      onHighlight("notification", id);
-    }
   }, 15000);
 
   return () => clearInterval(interval);

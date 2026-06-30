@@ -10,6 +10,7 @@ import {
   fetchCompanionMessages,
   sendCompanionMessage as persistMessage,
 } from "@/lib/supabase/queries";
+import { realtimeLogger } from "@/lib/realtime/logger";
 import {
   subscribeCompanionChat,
   unsubscribeChannel,
@@ -101,7 +102,10 @@ export function useCompanionChat({
 
     return () => {
       cancelled = true;
-      if (channel && supabase) unsubscribeChannel(supabase, channel);
+      if (channel && supabase) {
+        realtimeLogger.info("companion-chat", "Unsubscribing companion channel");
+        unsubscribeChannel(supabase, channel);
+      }
     };
   }, [companion, source, supabase, profileId]);
 
