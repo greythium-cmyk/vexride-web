@@ -24,8 +24,8 @@ Open [http://localhost:3000](http://localhost:3000) to view the landing page.
 
 ## Estructura
 
-- **Landing Page** — Hero, Quiénes somos, Cómo funciona, Vex AI 24/7, Oferta de lanzamiento, Precios, Footer
-- **Dashboard** — Próximamente
+- **Landing Page** (`/`) — Hero, Quiénes somos, Cómo funciona, Vex AI 24/7, Oferta de lanzamiento, Precios, Footer
+- **Dashboard** (`/dashboard`) — Sidebar, stats, viajes activos, matches, Vex AI chat, estadísticas, FAB
 
 ## Soporte
 
