@@ -1,2 +1,23 @@
-# vexride-web
-"Vexride-web is a premium smart mobility and productivity SaaS designed specifically to optimize daily work commutes. As the technology division of Greythium Incorporated, it transforms traditional carpooling into a seamless, efficient, and high-end corporate experience."
+# Vexride
+
+Plataforma SaaS premium de carpooling inteligente — división tecnológica de **Greythium Incorporated**.
+
+## Proyecto
+
+El código fuente está en [`/vexride`](/vexride).
+
+```bash
+cd vexride
+npm install
+npm run dev
+```
+
+Visita [http://localhost:3000](http://localhost:3000) para ver la landing page.
+
+## Stack
+
+Next.js 15+, Tailwind CSS v4, shadcn/ui, Framer Motion
+
+## Soporte
+
+Greythium@gmail.com
