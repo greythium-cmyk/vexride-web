@@ -6,25 +6,16 @@ import {
 } from "@clerk/nextjs/server";
 import { isClerkMiddlewareEnabled } from "@/lib/env";
 
-/** Marketing and public API routes — always pass through, never invoke Clerk. */
-const isAlwaysPublicRoute = createRouteMatcher([
-  "/",
-  "/pricing",
-  "/sign-in(.*)",
-  "/sign-up(.*)",
-  "/api/webhooks(.*)",
-  "/api/health(.*)",
-  "/api/stripe/checkout",
-  "/robots.txt",
-  "/sitemap.xml",
-]);
+/** Marketing pages — safe to serve even if Clerk throws. */
+const isMarketingRoute = createRouteMatcher(["/", "/pricing"]);
 
 const isProtectedRoute = createRouteMatcher(["/dashboard(.*)", "/api/vex-ai"]);
 
-function passthroughMiddleware(_req: NextRequest) {
-  return NextResponse.next();
-}
-
+/**
+ * Clerk runs on all matched routes (including /api/stripe/checkout) so auth()
+ * can read the session when the user is signed in. Only dashboard routes
+ * require authentication; everything else stays public.
+ */
 const clerkAuthMiddleware = clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req)) {
     await auth.protect();
@@ -34,17 +25,16 @@ const clerkAuthMiddleware = clerkMiddleware(async (auth, req) => {
 });
 
 export default async function middleware(req: NextRequest, event: NextFetchEvent) {
-  if (isAlwaysPublicRoute(req)) {
-    return NextResponse.next();
-  }
-
   if (!isClerkMiddlewareEnabled()) {
-    return passthroughMiddleware(req);
+    return NextResponse.next();
   }
 
   try {
     return await clerkAuthMiddleware(req, event);
   } catch (error) {
+    if (isMarketingRoute(req)) {
+      return NextResponse.next();
+    }
     console.error("[middleware] Clerk invocation failed, allowing request:", error);
     return NextResponse.next();
   }

@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useSubscription } from "@/hooks/use-subscription";
-import { STARTER_STRIPE_CHECKOUT_URL, type PlanId } from "@/lib/subscription/plans";
+import { getClientStripeCheckoutUrl, type PlanId } from "@/lib/subscription/plans";
 import { toast } from "sonner";
 
 const plans: Array<{
@@ -68,7 +68,7 @@ const plans: Array<{
     cta: "Elegir Starter",
     popular: false,
     icon: Sparkles,
-    checkoutUrl: STARTER_STRIPE_CHECKOUT_URL,
+    checkoutUrl: getClientStripeCheckoutUrl("starter") ?? undefined,
   },
   {
     planId: "pro",

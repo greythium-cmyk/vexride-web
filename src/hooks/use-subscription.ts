@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   DEMO_PLAN_STORAGE_KEY,
+  getClientStripeCheckoutUrl,
   getPlan,
   normalizePlanId,
   planHasFeature,
@@ -57,49 +58,67 @@ export function useSubscription({ planName }: UseSubscriptionOptions) {
   const startCheckout = useCallback(async (targetPlan: PlanId) => {
     if (targetPlan === "free") return;
 
-    const res = await fetch("/api/stripe/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ planId: targetPlan }),
-    });
+    const directCheckoutUrl = getClientStripeCheckoutUrl(targetPlan);
 
-    const raw = await res.text();
-    let data: {
-      url?: string;
-      demo?: boolean;
-      planId?: PlanId;
-      error?: string;
-    } = {};
+    const openDirectCheckout = () => {
+      if (!directCheckoutUrl) return false;
+      window.open(directCheckoutUrl, "_blank", "noopener,noreferrer");
+      return true;
+    };
 
-    if (raw) {
-      try {
-        data = JSON.parse(raw) as typeof data;
-      } catch {
-        throw new Error("Respuesta inválida del servidor de checkout");
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ planId: targetPlan }),
+      });
+
+      const raw = await res.text();
+      let data: {
+        url?: string;
+        demo?: boolean;
+        planId?: PlanId;
+        error?: string;
+      } = {};
+
+      if (raw) {
+        try {
+          data = JSON.parse(raw) as typeof data;
+        } catch {
+          if (openDirectCheckout()) return { redirect: true as const };
+          throw new Error("Respuesta inválida del servidor de checkout");
+        }
       }
-    }
 
-    if (res.status === 401) {
-      const returnUrl = window.location.href;
-      window.location.href = `/sign-in?redirect_url=${encodeURIComponent(returnUrl)}`;
-      return { authRequired: true as const };
-    }
+      if (res.status === 401) {
+        if (openDirectCheckout()) return { redirect: true as const };
+        const returnUrl = window.location.href;
+        window.location.href = `/sign-in?redirect_url=${encodeURIComponent(returnUrl)}`;
+        return { authRequired: true as const };
+      }
 
-    if (!res.ok) {
+      if (!res.ok) {
+        if (openDirectCheckout()) return { redirect: true as const };
+        throw new Error(data.error ?? "No se pudo iniciar el checkout");
+      }
+
+      if (data.demo) {
+        simulateSubscription(data.planId ?? targetPlan);
+        return { demo: true as const, planId: data.planId ?? targetPlan };
+      }
+
+      if (data.url) {
+        window.location.href = data.url;
+        return { redirect: true as const };
+      }
+
+      if (openDirectCheckout()) return { redirect: true as const };
       throw new Error(data.error ?? "No se pudo iniciar el checkout");
+    } catch (error) {
+      if (openDirectCheckout()) return { redirect: true as const };
+      throw error;
     }
-
-    if (data.demo) {
-      simulateSubscription(data.planId ?? targetPlan);
-      return { demo: true as const, planId: data.planId ?? targetPlan };
-    }
-
-    if (data.url) {
-      window.location.href = data.url;
-      return { redirect: true as const };
-    }
-
-    throw new Error(data.error ?? "No se pudo iniciar el checkout");
   }, [simulateSubscription]);
 
   const openBillingPortal = useCallback(async () => {

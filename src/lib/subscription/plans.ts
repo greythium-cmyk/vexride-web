@@ -158,3 +158,20 @@ export const DEMO_PLAN_STORAGE_KEY = "vexride_demo_plan";
 
 export const STARTER_STRIPE_CHECKOUT_URL =
   "https://buy.stripe.com/00w14n8dy1JMdOE2ligUM05";
+
+const CLIENT_CHECKOUT_ENV_KEYS: Partial<Record<PlanId, string>> = {
+  starter: "NEXT_PUBLIC_STRIPE_CHECKOUT_URL_STARTER",
+  pro: "NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO",
+  enterprise: "NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE",
+};
+
+/** Direct Stripe Payment Link for client-side fallback (guest / demo checkout). */
+export function getClientStripeCheckoutUrl(planId: PlanId): string | null {
+  if (planId === "starter") return STARTER_STRIPE_CHECKOUT_URL;
+
+  const envKey = CLIENT_CHECKOUT_ENV_KEYS[planId];
+  if (!envKey) return null;
+
+  const value = process.env[envKey]?.trim();
+  return isRealEnvValue(value) ? value! : null;
+}

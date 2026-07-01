@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { PLANS, STARTER_STRIPE_CHECKOUT_URL, type PlanId } from "@/lib/subscription/plans";
+import { PLANS, getClientStripeCheckoutUrl, type PlanId } from "@/lib/subscription/plans";
 import { useSubscription } from "@/hooks/use-subscription";
 import { toast } from "sonner";
 
@@ -82,6 +82,8 @@ export function PricingPlans({
           const isCurrent = planId === plan.id;
           const isLoading = loadingPlan === plan.id;
 
+          const directCheckoutUrl = getClientStripeCheckoutUrl(plan.id);
+
           return (
             <motion.div
               key={plan.id}
@@ -125,7 +127,7 @@ export function PricingPlans({
                   </ul>
                 </CardContent>
                 <CardFooter className="shrink-0">
-                  {plan.id === "starter" ? (
+                  {directCheckoutUrl && plan.id === "starter" ? (
                     <Button
                       className={cn(
                         "w-full font-semibold",
@@ -136,7 +138,7 @@ export function PricingPlans({
                       variant={plan.popular ? "default" : "outline"}
                       render={
                         <a
-                          href={STARTER_STRIPE_CHECKOUT_URL}
+                          href={directCheckoutUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                         />

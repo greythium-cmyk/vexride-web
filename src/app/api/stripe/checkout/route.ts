@@ -33,11 +33,12 @@ export async function POST(req: Request) {
   let email: string | undefined;
 
   if (isClerkConfigured()) {
-    const session = await auth();
-    userId = session.userId;
-    email = session.sessionClaims?.email as string | undefined;
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    try {
+      const session = await auth();
+      userId = session.userId ?? null;
+      email = session.sessionClaims?.email as string | undefined;
+    } catch {
+      // Middleware may be disabled (e.g. pk_test_ on prod) — allow guest checkout.
     }
   }
 
