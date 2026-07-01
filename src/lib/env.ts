@@ -20,6 +20,40 @@ export function isClerkConfigured(): boolean {
   return isRealEnvValue(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 }
 
+function getClerkPublishableKey(): string | undefined {
+  const key = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim();
+  return isRealEnvValue(key) ? key : undefined;
+}
+
+function isClerkTestPublishableKey(key: string): boolean {
+  return key.startsWith("pk_test_") || key.startsWith("test_");
+}
+
+function isProductionDeploy(): boolean {
+  return (
+    process.env.VERCEL_ENV === "production" ||
+    (process.env.NODE_ENV === "production" && process.env.VERCEL_ENV !== "preview")
+  );
+}
+
+/**
+ * Whether Clerk middleware should run. Disabled when keys are missing, placeholders,
+ * or when pk_test_ keys are used on a production Vercel deploy (causes 500).
+ */
+export function isClerkMiddlewareEnabled(): boolean {
+  const publishableKey = getClerkPublishableKey();
+  if (!publishableKey) return false;
+
+  const secretKey = process.env.CLERK_SECRET_KEY?.trim();
+  if (!isRealEnvValue(secretKey)) return false;
+
+  if (isProductionDeploy() && isClerkTestPublishableKey(publishableKey)) {
+    return false;
+  }
+
+  return true;
+}
+
 /** Returns true when OpenAI (or compatible) key exists for Vex AI streaming. */
 export function isVexAIConfigured(): boolean {
   return isRealEnvValue(process.env.OPENAI_API_KEY);

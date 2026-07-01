@@ -4,9 +4,10 @@ import {
   clerkMiddleware,
   createRouteMatcher,
 } from "@clerk/nextjs/server";
-import { isClerkConfigured } from "@/lib/env";
+import { isClerkMiddlewareEnabled } from "@/lib/env";
 
-const isPublicRoute = createRouteMatcher([
+/** Marketing and public API routes — always pass through, never invoke Clerk. */
+const isAlwaysPublicRoute = createRouteMatcher([
   "/",
   "/pricing",
   "/sign-in(.*)",
@@ -14,30 +15,39 @@ const isPublicRoute = createRouteMatcher([
   "/api/webhooks(.*)",
   "/api/health(.*)",
   "/api/stripe/checkout",
+  "/robots.txt",
+  "/sitemap.xml",
 ]);
 
 const isProtectedRoute = createRouteMatcher(["/dashboard(.*)", "/api/vex-ai"]);
 
-/** Demo mode: skip Clerk entirely — clerkMiddleware throws without a publishable key. */
-function demoMiddleware(_req: NextRequest) {
+function passthroughMiddleware(_req: NextRequest) {
   return NextResponse.next();
 }
 
 const clerkAuthMiddleware = clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req) && !isPublicRoute(req)) {
+  if (isProtectedRoute(req)) {
     await auth.protect();
   }
 
   return NextResponse.next();
 });
 
-/** Protect dashboard when Clerk is configured; allow open access in demo mode. */
-export default function middleware(req: NextRequest, event: NextFetchEvent) {
-  if (!isClerkConfigured()) {
-    return demoMiddleware(req);
+export default async function middleware(req: NextRequest, event: NextFetchEvent) {
+  if (isAlwaysPublicRoute(req)) {
+    return NextResponse.next();
   }
 
-  return clerkAuthMiddleware(req, event);
+  if (!isClerkMiddlewareEnabled()) {
+    return passthroughMiddleware(req);
+  }
+
+  try {
+    return await clerkAuthMiddleware(req, event);
+  } catch (error) {
+    console.error("[middleware] Clerk invocation failed, allowing request:", error);
+    return NextResponse.next();
+  }
 }
 
 export const config = {
