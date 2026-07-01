@@ -62,12 +62,22 @@ export function useSubscription({ planName }: UseSubscriptionOptions) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ planId: targetPlan }),
     });
-    const data = (await res.json()) as {
+
+    const raw = await res.text();
+    let data: {
       url?: string;
       demo?: boolean;
       planId?: PlanId;
       error?: string;
-    };
+    } = {};
+
+    if (raw) {
+      try {
+        data = JSON.parse(raw) as typeof data;
+      } catch {
+        throw new Error("Respuesta inválida del servidor de checkout");
+      }
+    }
 
     if (res.status === 401) {
       const returnUrl = window.location.href;

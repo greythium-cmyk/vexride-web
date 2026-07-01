@@ -50,22 +50,29 @@ export async function POST(req: Request) {
     customerId = profile?.stripe_customer_id ?? undefined;
   }
 
-  const checkoutSession = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    customer: customerId,
-    customer_email: customerId ? undefined : email,
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${appUrl}/dashboard?checkout=success&plan=${planId}`,
-    cancel_url: `${appUrl}/pricing?checkout=canceled`,
-    allow_promotion_codes: true,
-    metadata: {
-      planId,
-      clerkUserId: userId ?? "anonymous",
-    },
-    subscription_data: {
-      metadata: { planId, clerkUserId: userId ?? "anonymous" },
-    },
-  });
+  try {
+    const checkoutSession = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      customer: customerId,
+      customer_email: customerId ? undefined : email,
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${appUrl}/dashboard?checkout=success&plan=${planId}`,
+      cancel_url: `${appUrl}/pricing?checkout=canceled`,
+      allow_promotion_codes: true,
+      metadata: {
+        planId,
+        clerkUserId: userId ?? "anonymous",
+      },
+      subscription_data: {
+        metadata: { planId, clerkUserId: userId ?? "anonymous" },
+      },
+    });
 
-  return NextResponse.json({ url: checkoutSession.url });
+    return NextResponse.json({ url: checkoutSession.url });
+  } catch (error) {
+    console.error("[Stripe checkout]", { planId, priceId, error });
+    const message =
+      error instanceof Error ? error.message : "Stripe checkout failed";
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
 }

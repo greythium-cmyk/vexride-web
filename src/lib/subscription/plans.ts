@@ -1,3 +1,5 @@
+import { isRealEnvValue } from "@/lib/env";
+
 export type PlanId = "free" | "starter" | "pro" | "enterprise";
 
 export type PlanFeature =
@@ -135,7 +137,21 @@ export function planMeetsMinimum(current: PlanId, required: PlanId): boolean {
 export function getStripePriceId(planId: PlanId): string | null {
   const plan = getPlan(planId);
   if (!plan.stripePriceEnvKey) return null;
-  return process.env[plan.stripePriceEnvKey] ?? null;
+
+  const envKeys = [
+    plan.stripePriceEnvKey,
+    plan.stripePriceEnvKey.replace(
+      /^STRIPE_PRICE_/,
+      "NEXT_PUBLIC_STRIPE_PRICE_"
+    ),
+  ];
+
+  for (const key of envKeys) {
+    const value = process.env[key]?.trim();
+    if (isRealEnvValue(value)) return value!;
+  }
+
+  return null;
 }
 
 export const DEMO_PLAN_STORAGE_KEY = "vexride_demo_plan";
