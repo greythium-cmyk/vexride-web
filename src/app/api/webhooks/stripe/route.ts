@@ -1,10 +1,9 @@
-import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getStripe } from "@/lib/stripe/server";
 import {
-  updateProfileByStripeCustomer,
-  updateProfileSubscription,
-} from "@/lib/stripe/subscription-db";
+  linkStripeCustomerToClerkUser,
+} from "@/lib/stripe/link-subscription";
+import { updateProfileByStripeCustomer } from "@/lib/stripe/subscription-db";
 import { normalizePlanId, type PlanId } from "@/lib/subscription/plans";
 import { isStripeConfigured } from "@/lib/env";
 
@@ -43,16 +42,10 @@ export async function POST(req: Request) {
         const subscriptionId = session.subscription as string;
 
         if (clerkUserId && clerkUserId !== "anonymous") {
-          await updateProfileSubscription(clerkUserId, {
-            plan: planId,
+          await linkStripeCustomerToClerkUser(clerkUserId, "", {
             stripeCustomerId: customerId,
             stripeSubscriptionId: subscriptionId,
-            subscriptionStatus: "active",
-          });
-        } else if (customerId) {
-          await updateProfileByStripeCustomer(customerId, {
-            plan: planId,
-            stripeSubscriptionId: subscriptionId,
+            planId,
             subscriptionStatus: "active",
           });
         }

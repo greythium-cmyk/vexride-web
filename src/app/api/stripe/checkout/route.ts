@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe/server";
 import { getProfileByClerkId } from "@/lib/stripe/subscription-db";
 import { getPlan, getStripePriceId, type PlanId } from "@/lib/subscription/plans";
+import { buildStripeCheckoutSuccessUrl } from "@/lib/stripe/checkout-urls";
 import { isClerkConfigured, isStripeConfigured } from "@/lib/env";
 
 export async function POST(req: Request) {
@@ -52,12 +53,15 @@ export async function POST(req: Request) {
   }
 
   try {
+    const isGuest = !userId;
+    const successUrl = buildStripeCheckoutSuccessUrl(appUrl, planId, isGuest);
+
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer: customerId,
       customer_email: customerId ? undefined : email,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${appUrl}/dashboard?checkout=success&plan=${planId}`,
+      success_url: successUrl,
       cancel_url: `${appUrl}/pricing?checkout=canceled`,
       allow_promotion_codes: true,
       metadata: {

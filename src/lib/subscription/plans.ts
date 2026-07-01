@@ -159,6 +159,10 @@ export const DEMO_PLAN_STORAGE_KEY = "vexride_demo_plan";
 export const STARTER_STRIPE_CHECKOUT_URL =
   "https://buy.stripe.com/00w14n8dy1JMdOE2ligUM05";
 
+/** Guest checkout success URL for Stripe Payment Links (configure in Stripe Dashboard). */
+export const GUEST_CHECKOUT_SIGNUP_SUCCESS_URL =
+  "/sign-up?session_id={CHECKOUT_SESSION_ID}";
+
 const CLIENT_CHECKOUT_ENV_KEYS: Partial<Record<PlanId, string>> = {
   starter: "NEXT_PUBLIC_STRIPE_CHECKOUT_URL_STARTER",
   pro: "NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO",

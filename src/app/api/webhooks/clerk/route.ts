@@ -2,6 +2,7 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
+import { linkPendingStripeByEmail } from "@/lib/stripe/link-subscription";
 
 /**
  * Clerk webhook — syncs user.created / user.updated to Supabase profiles.
@@ -70,6 +71,10 @@ export async function POST(req: Request) {
     if (error) {
       console.error("[Clerk webhook] Profile upsert failed:", error);
       return new Response("Database error", { status: 500 });
+    }
+
+    if (evt.type === "user.created" && email) {
+      await linkPendingStripeByEmail(id, email);
     }
   }
 
