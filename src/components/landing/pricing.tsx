@@ -12,6 +12,7 @@ import {
   ENTERPRISE_STRIPE_CHECKOUT_URL,
   PRO_STRIPE_CHECKOUT_URL,
   STARTER_STRIPE_CHECKOUT_URL,
+  STRIPE_CHECKOUT_LINK_PROPS,
   STRIPE_PLAN_LINK_STYLE,
   type PlanId,
 } from "@/lib/subscription/plans";
@@ -197,19 +198,46 @@ export function Pricing() {
                   <a href="/sign-up">Comenzar gratis</a>
                 )}
                 {plan.planId === "starter" && (
-                  <a href={STARTER_STRIPE_CHECKOUT_URL} style={STRIPE_PLAN_LINK_STYLE}>
+                  <a
+                    href={STARTER_STRIPE_CHECKOUT_URL}
+                    style={STRIPE_PLAN_LINK_STYLE}
+                    {...STRIPE_CHECKOUT_LINK_PROPS}
+                  >
                     Elegir Starter
                   </a>
                 )}
                 {plan.planId === "pro" && (
-                  <a href={PRO_STRIPE_CHECKOUT_URL} style={STRIPE_PLAN_LINK_STYLE}>
+                  <a
+                    href={PRO_STRIPE_CHECKOUT_URL}
+                    {...STRIPE_CHECKOUT_LINK_PROPS}
+                    style={{
+                      display: "block",
+                      padding: "16px",
+                      background: "#00ffff",
+                      color: "#000",
+                      textAlign: "center",
+                      borderRadius: "8px",
+                      textDecoration: "none",
+                      fontWeight: "bold",
+                    }}
+                  >
                     Elegir Pro
                   </a>
                 )}
                 {plan.planId === "enterprise" && (
                   <a
                     href={ENTERPRISE_STRIPE_CHECKOUT_URL}
-                    style={STRIPE_PLAN_LINK_STYLE}
+                    {...STRIPE_CHECKOUT_LINK_PROPS}
+                    style={{
+                      display: "block",
+                      padding: "16px",
+                      background: "#00ffff",
+                      color: "#000",
+                      textAlign: "center",
+                      borderRadius: "8px",
+                      textDecoration: "none",
+                      fontWeight: "bold",
+                    }}
                   >
                     Elegir Enterprise
                   </a>

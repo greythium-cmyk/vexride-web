@@ -159,12 +159,49 @@ export const DEMO_PLAN_STORAGE_KEY = "vexride_demo_plan";
 export const STARTER_STRIPE_CHECKOUT_URL =
   "https://buy.stripe.com/00w14n8dy1JMdOE2ligUM05";
 
-/** Stripe Payment Links — set NEXT_PUBLIC_* in Vercel for production builds. */
-export const PRO_STRIPE_CHECKOUT_URL =
-  process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO ?? "";
+const APP_BASE_URL = (
+  process.env.NEXT_PUBLIC_APP_URL ?? "https://vexride.app"
+).replace(/\/$/, "");
 
-export const ENTERPRISE_STRIPE_CHECKOUT_URL =
-  process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE ?? "";
+/** Force absolute https URLs so browsers never treat checkout as an in-app route. */
+function toAbsoluteHttpsUrl(url: string): string {
+  const trimmed = url.trim();
+  if (trimmed.startsWith("https://")) return trimmed;
+  if (trimmed.startsWith("http://")) return trimmed.replace(/^http:/, "https:");
+  if (trimmed.startsWith("//")) return `https:${trimmed}`;
+  if (trimmed.startsWith("/")) return `${APP_BASE_URL}${trimmed}`;
+  if (trimmed.startsWith("buy.stripe.com/")) return `https://${trimmed}`;
+  return trimmed;
+}
+
+function resolveStripePaymentLink(
+  envValue: string | undefined,
+  plan: "pro" | "enterprise"
+): string {
+  const trimmed = envValue?.trim();
+  if (trimmed && !trimmed.startsWith("#")) {
+    const absolute = toAbsoluteHttpsUrl(trimmed);
+    if (absolute.startsWith("https://")) return absolute;
+  }
+  return `${APP_BASE_URL}/api/stripe/pay/${plan}`;
+}
+
+/** Open Stripe checkout in a new tab — avoids Next.js in-app navigation. */
+export const STRIPE_CHECKOUT_LINK_PROPS = {
+  target: "_blank" as const,
+  rel: "noopener noreferrer",
+};
+
+/** Stripe Payment Links — set NEXT_PUBLIC_* in Vercel, or use absolute /api/stripe/pay/* fallback. */
+export const PRO_STRIPE_CHECKOUT_URL = resolveStripePaymentLink(
+  process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO,
+  "pro"
+);
+
+export const ENTERPRISE_STRIPE_CHECKOUT_URL = resolveStripePaymentLink(
+  process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE,
+  "enterprise"
+);
 
 export const STRIPE_PLAN_LINK_STYLE = {
   display: "block",
@@ -194,12 +231,12 @@ export const PLAN_CHECKOUT_LINKS: Record<
     external: true,
   },
   pro: {
-    href: process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO || "#",
+    href: PRO_STRIPE_CHECKOUT_URL,
     label: "Elegir Pro",
     external: true,
   },
   enterprise: {
-    href: process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE || "#",
+    href: ENTERPRISE_STRIPE_CHECKOUT_URL,
     label: "Elegir Enterprise",
     external: true,
   },
@@ -218,10 +255,10 @@ export function getPlanAnchorHref(planId: PlanId): string {
   }
 
   if (planId === "pro") {
-    return process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO ?? "#precios";
+    return PRO_STRIPE_CHECKOUT_URL;
   }
 
-  return process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE ?? "#precios";
+  return ENTERPRISE_STRIPE_CHECKOUT_URL;
 }
 
 /** @deprecated Use getPlanAnchorHref — kept for checkout hook fallback */
