@@ -163,21 +163,28 @@ export const STARTER_STRIPE_CHECKOUT_URL =
 export const GUEST_CHECKOUT_SIGNUP_SUCCESS_URL =
   "/sign-up?session_id={CHECKOUT_SESSION_ID}";
 
-const CLIENT_CHECKOUT_ENV_KEYS: Partial<Record<PlanId, string>> = {
-  starter: "NEXT_PUBLIC_STRIPE_CHECKOUT_URL_STARTER",
-  pro: "NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO",
-  enterprise: "NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE",
-};
+export const PLAN_ANCHOR_STYLE = { display: "block", cursor: "pointer" } as const;
 
-/** Direct Stripe Payment Link for client-side checkout buttons. */
-export function getClientStripeCheckoutUrl(planId: PlanId): string | null {
-  const envKey = CLIENT_CHECKOUT_ENV_KEYS[planId];
-  if (envKey) {
-    const value = process.env[envKey]?.trim();
-    if (isRealEnvValue(value)) return value!;
+export function getPlanAnchorHref(planId: PlanId): string {
+  if (planId === "free") return "/sign-up";
+
+  if (planId === "starter") {
+    return (
+      process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_STARTER ??
+      STARTER_STRIPE_CHECKOUT_URL
+    );
   }
 
-  if (planId === "starter") return STARTER_STRIPE_CHECKOUT_URL;
+  if (planId === "pro") {
+    return process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO ?? "#precios";
+  }
 
-  return null;
+  return process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE ?? "#precios";
+}
+
+/** @deprecated Use getPlanAnchorHref — kept for checkout hook fallback */
+export function getClientStripeCheckoutUrl(planId: PlanId): string | null {
+  if (planId === "free") return null;
+  const href = getPlanAnchorHref(planId);
+  return href.startsWith("#") ? null : href;
 }

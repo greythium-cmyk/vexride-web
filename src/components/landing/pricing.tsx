@@ -12,8 +12,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { PlanCheckoutLink } from "@/components/pricing/plan-checkout-link";
-import type { PlanId } from "@/lib/subscription/plans";
+import {
+  PLAN_ANCHOR_STYLE,
+  STARTER_STRIPE_CHECKOUT_URL,
+  type PlanId,
+} from "@/lib/subscription/plans";
 
 const plans: Array<{
   planId: PlanId;
@@ -214,9 +217,31 @@ export function Pricing() {
                 </CardContent>
 
                 <CardFooter className="mt-auto shrink-0">
-                  <PlanCheckoutLink planId={plan.planId} popular={plan.popular}>
+                  <a
+                    href={
+                      plan.planId === "free"
+                        ? "/sign-up"
+                        : plan.planId === "starter"
+                          ? process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_STARTER ??
+                            STARTER_STRIPE_CHECKOUT_URL
+                          : plan.planId === "pro"
+                            ? process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO ?? "#precios"
+                            : process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE ??
+                              "#precios"
+                    }
+                    style={PLAN_ANCHOR_STYLE}
+                    className={cn(
+                      "w-full rounded-lg py-2.5 text-center text-sm font-semibold",
+                      plan.popular
+                        ? "bg-gradient-vex text-[#0F172A] shadow-lg shadow-teal-500/20"
+                        : "border border-white/10 bg-white/5 text-white"
+                    )}
+                    {...(plan.planId !== "free"
+                      ? { target: "_blank", rel: "noopener noreferrer" }
+                      : {})}
+                  >
                     {plan.cta}
-                  </PlanCheckoutLink>
+                  </a>
                 </CardFooter>
               </Card>
             </motion.div>

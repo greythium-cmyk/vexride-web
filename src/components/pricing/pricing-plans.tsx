@@ -12,8 +12,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { PLANS } from "@/lib/subscription/plans";
-import { PlanCheckoutLink } from "@/components/pricing/plan-checkout-link";
+import {
+  PLANS,
+  PLAN_ANCHOR_STYLE,
+  STARTER_STRIPE_CHECKOUT_URL,
+} from "@/lib/subscription/plans";
 
 const icons = {
   free: Sparkles,
@@ -98,9 +101,31 @@ export function PricingPlans({ className, showTitle = true }: PricingPlansProps)
                   </ul>
                 </CardContent>
                 <CardFooter className="shrink-0">
-                  <PlanCheckoutLink planId={plan.id} popular={plan.popular}>
+                  <a
+                    href={
+                      plan.id === "free"
+                        ? "/sign-up"
+                        : plan.id === "starter"
+                          ? process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_STARTER ??
+                            STARTER_STRIPE_CHECKOUT_URL
+                          : plan.id === "pro"
+                            ? process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO ?? "#precios"
+                            : process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE ??
+                              "#precios"
+                    }
+                    style={PLAN_ANCHOR_STYLE}
+                    className={cn(
+                      "w-full rounded-lg py-2.5 text-center text-sm font-semibold",
+                      plan.popular
+                        ? "bg-gradient-vex text-[#0F172A] shadow-lg shadow-teal-500/10"
+                        : "border border-white/10 bg-white/5 text-white"
+                    )}
+                    {...(plan.id !== "free"
+                      ? { target: "_blank", rel: "noopener noreferrer" }
+                      : {})}
+                  >
                     {ctaLabels[plan.id] ?? `Elegir ${plan.name}`}
-                  </PlanCheckoutLink>
+                  </a>
                 </CardFooter>
               </Card>
             </motion.div>
