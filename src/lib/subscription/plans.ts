@@ -169,13 +169,15 @@ const CLIENT_CHECKOUT_ENV_KEYS: Partial<Record<PlanId, string>> = {
   enterprise: "NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE",
 };
 
-/** Direct Stripe Payment Link for client-side fallback (guest / demo checkout). */
+/** Direct Stripe Payment Link for client-side checkout buttons. */
 export function getClientStripeCheckoutUrl(planId: PlanId): string | null {
+  const envKey = CLIENT_CHECKOUT_ENV_KEYS[planId];
+  if (envKey) {
+    const value = process.env[envKey]?.trim();
+    if (isRealEnvValue(value)) return value!;
+  }
+
   if (planId === "starter") return STARTER_STRIPE_CHECKOUT_URL;
 
-  const envKey = CLIENT_CHECKOUT_ENV_KEYS[planId];
-  if (!envKey) return null;
-
-  const value = process.env[envKey]?.trim();
-  return isRealEnvValue(value) ? value! : null;
+  return null;
 }

@@ -43,7 +43,7 @@ export default function PricingPage() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-12 lg:px-6 lg:py-16">
-        <PricingPlans currentPlanName="Free" />
+        <PricingPlans />
         <p className="mt-8 text-center text-xs text-slate-500">
           Pagos procesados por Stripe. Modo demo disponible sin configuración.
         </p>

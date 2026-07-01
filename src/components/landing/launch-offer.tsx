@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, Copy, Gift, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getClientStripeCheckoutUrl } from "@/lib/subscription/plans";
+
+const proCheckoutUrl = getClientStripeCheckoutUrl("pro") ?? "#precios";
 
 export function LaunchOffer() {
   const [copied, setCopied] = useState(false);
@@ -119,12 +123,14 @@ export function LaunchOffer() {
                 </div>
               </div>
 
-              <Button
-                size="lg"
-                className="mt-8 w-full max-w-xs bg-gradient-vex font-semibold text-[#0F172A] shadow-xl shadow-teal-500/25 hover:opacity-90"
+              <Link
+                href={proCheckoutUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-8 inline-flex min-h-11 w-full max-w-xs touch-manipulation items-center justify-center rounded-lg bg-gradient-vex px-6 py-3 text-base font-semibold text-[#0F172A] shadow-xl shadow-teal-500/25 transition-opacity hover:opacity-90"
               >
                 Reclamar mi descuento
-              </Button>
+              </Link>
             </div>
           </div>
         </motion.div>

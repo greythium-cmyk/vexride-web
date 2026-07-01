@@ -1,11 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
-import { Check, Crown, Sparkles, Building, Loader2 } from "lucide-react";
+import { Check, Crown, Sparkles, Building } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -15,9 +12,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useSubscription } from "@/hooks/use-subscription";
-import { getClientStripeCheckoutUrl, type PlanId } from "@/lib/subscription/plans";
-import { toast } from "sonner";
+import { PlanCheckoutLink } from "@/components/pricing/plan-checkout-link";
+import type { PlanId } from "@/lib/subscription/plans";
 
 const plans: Array<{
   planId: PlanId;
@@ -30,7 +26,6 @@ const plans: Array<{
   cta: string;
   popular: boolean;
   icon: typeof Sparkles;
-  checkoutUrl?: string;
 }> = [
   {
     planId: "free",
@@ -68,7 +63,6 @@ const plans: Array<{
     cta: "Elegir Starter",
     popular: false,
     icon: Sparkles,
-    checkoutUrl: getClientStripeCheckoutUrl("starter") ?? undefined,
   },
   {
     planId: "pro",
@@ -116,30 +110,6 @@ const plans: Array<{
 ];
 
 export function Pricing() {
-  const { startCheckout, simulateSubscription } = useSubscription({ planName: "Free" });
-  const [loadingPlan, setLoadingPlan] = useState<PlanId | null>(null);
-
-  const handlePlanSelect = async (planId: PlanId) => {
-    if (planId === "free") return;
-
-    setLoadingPlan(planId);
-    try {
-      const result = await startCheckout(planId);
-      if (result && "demo" in result && result.demo) {
-        simulateSubscription(planId);
-        toast.success(`¡Plan ${planId} activado!`, {
-          description: "Suscripción simulada en modo demo.",
-        });
-      }
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "No se pudo iniciar el checkout"
-      );
-    } finally {
-      setLoadingPlan(null);
-    }
-  };
-
   return (
     <section id="precios" className="relative py-24 lg:py-32">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#14B8A6]/5 to-transparent" />
@@ -244,54 +214,9 @@ export function Pricing() {
                 </CardContent>
 
                 <CardFooter className="mt-auto shrink-0">
-                  {plan.planId === "free" ? (
-                    <Button
-                      className={cn(
-                        "w-full font-semibold",
-                        "border-white/10 bg-white/5 text-white hover:bg-white/10"
-                      )}
-                      variant="outline"
-                      render={<Link href="/sign-up" />}
-                    >
-                      {plan.cta}
-                    </Button>
-                  ) : plan.checkoutUrl ? (
-                    <Button
-                      className={cn(
-                        "w-full font-semibold",
-                        plan.popular
-                          ? "bg-gradient-vex text-[#0F172A] shadow-lg shadow-teal-500/20 hover:opacity-90"
-                          : "border-white/10 bg-white/5 text-white hover:bg-white/10"
-                      )}
-                      variant={plan.popular ? "default" : "outline"}
-                      render={
-                        <a
-                          href={plan.checkoutUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        />
-                      }
-                    >
-                      {plan.cta}
-                    </Button>
-                  ) : (
-                    <Button
-                      className={cn(
-                        "w-full font-semibold",
-                        plan.popular
-                          ? "bg-gradient-vex text-[#0F172A] shadow-lg shadow-teal-500/20 hover:opacity-90"
-                          : "border-white/10 bg-white/5 text-white hover:bg-white/10"
-                      )}
-                      variant={plan.popular ? "default" : "outline"}
-                      disabled={loadingPlan === plan.planId}
-                      onClick={() => void handlePlanSelect(plan.planId)}
-                    >
-                      {loadingPlan === plan.planId && (
-                        <Loader2 className="size-4 animate-spin" aria-hidden />
-                      )}
-                      {plan.cta}
-                    </Button>
-                  )}
+                  <PlanCheckoutLink planId={plan.planId} popular={plan.popular}>
+                    {plan.cta}
+                  </PlanCheckoutLink>
                 </CardFooter>
               </Card>
             </motion.div>

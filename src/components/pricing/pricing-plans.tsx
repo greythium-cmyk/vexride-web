@@ -1,11 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
-import { Check, Crown, Sparkles, Building, Loader2 } from "lucide-react";
+import { Check, Crown, Sparkles, Building } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -15,9 +12,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { PLANS, getClientStripeCheckoutUrl, type PlanId } from "@/lib/subscription/plans";
-import { useSubscription } from "@/hooks/use-subscription";
-import { toast } from "sonner";
+import { PLANS } from "@/lib/subscription/plans";
+import { PlanCheckoutLink } from "@/components/pricing/plan-checkout-link";
 
 const icons = {
   free: Sparkles,
@@ -26,40 +22,19 @@ const icons = {
   enterprise: Building,
 };
 
+const ctaLabels: Record<string, string> = {
+  free: "Comenzar gratis",
+  starter: "Elegir Starter",
+  pro: "Elegir Pro",
+  enterprise: "Elegir Enterprise",
+};
+
 interface PricingPlansProps {
-  currentPlanName?: string;
   className?: string;
   showTitle?: boolean;
 }
 
-export function PricingPlans({
-  currentPlanName = "Free",
-  className,
-  showTitle = true,
-}: PricingPlansProps) {
-  const { planId, startCheckout, simulateSubscription } = useSubscription({
-    planName: currentPlanName,
-  });
-  const [loadingPlan, setLoadingPlan] = useState<PlanId | null>(null);
-
-  const handleSelect = async (id: PlanId) => {
-    if (id === "free") return;
-    setLoadingPlan(id);
-    try {
-      const result = await startCheckout(id);
-      if (result && "demo" in result && result.demo) {
-        simulateSubscription(id);
-        toast.success(`¡Plan ${id} activado!`, {
-          description: "Suscripción simulada en modo demo.",
-        });
-      }
-    } catch {
-      toast.error("No se pudo iniciar el checkout");
-    } finally {
-      setLoadingPlan(null);
-    }
-  };
-
+export function PricingPlans({ className, showTitle = true }: PricingPlansProps) {
   return (
     <section className={cn("py-4", className)}>
       {showTitle && (
@@ -80,10 +55,6 @@ export function PricingPlans({
       <div className="grid gap-6 pb-12 md:grid-cols-2 xl:grid-cols-4">
         {PLANS.map((plan, i) => {
           const Icon = icons[plan.id];
-          const isCurrent = planId === plan.id;
-          const isLoading = loadingPlan === plan.id;
-
-          const directCheckoutUrl = getClientStripeCheckoutUrl(plan.id);
 
           return (
             <motion.div
@@ -97,8 +68,7 @@ export function PricingPlans({
                 className={cn(
                   "relative flex h-full flex-col justify-between border-white/10 bg-[#1E293B]/60 backdrop-blur",
                   plan.popular &&
-                    "overflow-visible border-[#14B8A6]/40 shadow-lg shadow-teal-500/10",
-                  isCurrent && "ring-1 ring-[#14B8A6]/40"
+                    "overflow-visible border-[#14B8A6]/40 shadow-lg shadow-teal-500/10"
                 )}
               >
                 {plan.popular && (
@@ -128,50 +98,9 @@ export function PricingPlans({
                   </ul>
                 </CardContent>
                 <CardFooter className="shrink-0">
-                  {plan.id === "free" ? (
-                    <Button
-                      className="w-full border-white/10 bg-white/5 font-semibold text-white hover:bg-white/10"
-                      variant="outline"
-                      disabled={isCurrent}
-                      render={<Link href="/sign-up" />}
-                    >
-                      {isCurrent ? "Plan actual" : "Comenzar gratis"}
-                    </Button>
-                  ) : directCheckoutUrl && plan.id === "starter" ? (
-                    <Button
-                      className={cn(
-                        "w-full font-semibold",
-                        plan.popular
-                          ? "bg-gradient-vex text-[#0F172A] hover:opacity-90"
-                          : "border-white/10 bg-white/5 text-white hover:bg-white/10"
-                      )}
-                      variant={plan.popular ? "default" : "outline"}
-                      render={
-                        <a
-                          href={directCheckoutUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        />
-                      }
-                    >
-                      Elegir {plan.name}
-                    </Button>
-                  ) : (
-                    <Button
-                      className={cn(
-                        "w-full font-semibold",
-                        plan.popular
-                          ? "bg-gradient-vex text-[#0F172A] hover:opacity-90"
-                          : "border-white/10 bg-white/5 text-white hover:bg-white/10"
-                      )}
-                      variant={plan.popular ? "default" : "outline"}
-                      disabled={isCurrent || isLoading}
-                      onClick={() => void handleSelect(plan.id)}
-                    >
-                      {isLoading && <Loader2 className="size-4 animate-spin" aria-hidden />}
-                      {isCurrent ? "Plan actual" : `Elegir ${plan.name}`}
-                    </Button>
-                  )}
+                  <PlanCheckoutLink planId={plan.id} popular={plan.popular}>
+                    {ctaLabels[plan.id] ?? `Elegir ${plan.name}`}
+                  </PlanCheckoutLink>
                 </CardFooter>
               </Card>
             </motion.div>
