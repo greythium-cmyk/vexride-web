@@ -5,10 +5,7 @@ import { motion } from "framer-motion";
 import { Check, Copy, Gift, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PLAN_ANCHOR_STYLE } from "@/lib/subscription/plans";
-
-const proCheckoutUrl =
-  process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO ?? "#precios";
+import { PRO_STRIPE_CHECKOUT_URL, STRIPE_PLAN_LINK_STYLE } from "@/lib/subscription/plans";
 
 export function LaunchOffer() {
   const [copied, setCopied] = useState(false);
@@ -123,13 +120,7 @@ export function LaunchOffer() {
                 </div>
               </div>
 
-              <a
-                href={proCheckoutUrl}
-                style={PLAN_ANCHOR_STYLE}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-8 inline-flex min-h-11 w-full max-w-xs items-center justify-center rounded-lg bg-gradient-vex px-6 py-3 text-base font-semibold text-[#0F172A] shadow-xl shadow-teal-500/25"
-              >
+              <a href={PRO_STRIPE_CHECKOUT_URL} style={STRIPE_PLAN_LINK_STYLE}>
                 Reclamar mi descuento
               </a>
             </div>

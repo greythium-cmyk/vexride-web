@@ -8,8 +8,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { PLANS } from "@/lib/subscription/plans";
-import { PlanPricingLink } from "@/components/pricing/plan-pricing-link";
+import {
+  ENTERPRISE_STRIPE_CHECKOUT_URL,
+  PLANS,
+  PRO_STRIPE_CHECKOUT_URL,
+  STARTER_STRIPE_CHECKOUT_URL,
+  STRIPE_PLAN_LINK_STYLE,
+} from "@/lib/subscription/plans";
 
 const icons = {
   free: Sparkles,
@@ -80,9 +85,27 @@ export function PricingPlans({ className, showTitle = true }: PricingPlansProps)
                     ))}
                   </ul>
                 </CardContent>
-                <div className="relative z-20 px-4 pb-4">
-                  <PlanPricingLink planId={plan.id} popular={plan.popular} />
-                </div>
+                {plan.id === "free" && (
+                  <a href="/sign-up">Comenzar gratis</a>
+                )}
+                {plan.id === "starter" && (
+                  <a href={STARTER_STRIPE_CHECKOUT_URL} style={STRIPE_PLAN_LINK_STYLE}>
+                    Elegir Starter
+                  </a>
+                )}
+                {plan.id === "pro" && (
+                  <a href={PRO_STRIPE_CHECKOUT_URL} style={STRIPE_PLAN_LINK_STYLE}>
+                    Elegir Pro
+                  </a>
+                )}
+                {plan.id === "enterprise" && (
+                  <a
+                    href={ENTERPRISE_STRIPE_CHECKOUT_URL}
+                    style={STRIPE_PLAN_LINK_STYLE}
+                  >
+                    Elegir Enterprise
+                  </a>
+                )}
               </Card>
             </div>
           );

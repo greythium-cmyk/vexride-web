@@ -159,6 +159,24 @@ export const DEMO_PLAN_STORAGE_KEY = "vexride_demo_plan";
 export const STARTER_STRIPE_CHECKOUT_URL =
   "https://buy.stripe.com/00w14n8dy1JMdOE2ligUM05";
 
+/** Stripe Payment Links — set NEXT_PUBLIC_* in Vercel for production builds. */
+export const PRO_STRIPE_CHECKOUT_URL =
+  process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO ?? "";
+
+export const ENTERPRISE_STRIPE_CHECKOUT_URL =
+  process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE ?? "";
+
+export const STRIPE_PLAN_LINK_STYLE = {
+  display: "block",
+  padding: "16px",
+  background: "#00ffff",
+  color: "#000",
+  textAlign: "center" as const,
+  borderRadius: "8px",
+  textDecoration: "none",
+  fontWeight: "bold",
+};
+
 /** Guest checkout success URL for Stripe Payment Links (configure in Stripe Dashboard). */
 export const GUEST_CHECKOUT_SIGNUP_SUCCESS_URL =
   "/sign-up?session_id={CHECKOUT_SESSION_ID}";
