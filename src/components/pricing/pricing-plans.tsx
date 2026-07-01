@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, Crown, Sparkles, Building, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -127,7 +128,16 @@ export function PricingPlans({
                   </ul>
                 </CardContent>
                 <CardFooter className="shrink-0">
-                  {directCheckoutUrl && plan.id === "starter" ? (
+                  {plan.id === "free" ? (
+                    <Button
+                      className="w-full border-white/10 bg-white/5 font-semibold text-white hover:bg-white/10"
+                      variant="outline"
+                      disabled={isCurrent}
+                      render={<Link href="/sign-up" />}
+                    >
+                      {isCurrent ? "Plan actual" : "Comenzar gratis"}
+                    </Button>
+                  ) : directCheckoutUrl && plan.id === "starter" ? (
                     <Button
                       className={cn(
                         "w-full font-semibold",
@@ -155,15 +165,11 @@ export function PricingPlans({
                           : "border-white/10 bg-white/5 text-white hover:bg-white/10"
                       )}
                       variant={plan.popular ? "default" : "outline"}
-                      disabled={isCurrent || plan.id === "free" || isLoading}
+                      disabled={isCurrent || isLoading}
                       onClick={() => void handleSelect(plan.id)}
                     >
                       {isLoading && <Loader2 className="size-4 animate-spin" aria-hidden />}
-                      {isCurrent
-                        ? "Plan actual"
-                        : plan.id === "free"
-                          ? "Incluido"
-                          : `Elegir ${plan.name}`}
+                      {isCurrent ? "Plan actual" : `Elegir ${plan.name}`}
                     </Button>
                   )}
                 </CardFooter>

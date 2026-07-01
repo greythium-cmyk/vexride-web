@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, Crown, Sparkles, Building, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -116,15 +116,11 @@ const plans: Array<{
 ];
 
 export function Pricing() {
-  const router = useRouter();
   const { startCheckout, simulateSubscription } = useSubscription({ planName: "Free" });
   const [loadingPlan, setLoadingPlan] = useState<PlanId | null>(null);
 
   const handlePlanSelect = async (planId: PlanId) => {
-    if (planId === "free") {
-      router.push("/sign-up");
-      return;
-    }
+    if (planId === "free") return;
 
     setLoadingPlan(planId);
     try {
@@ -248,7 +244,18 @@ export function Pricing() {
                 </CardContent>
 
                 <CardFooter className="mt-auto shrink-0">
-                  {plan.checkoutUrl ? (
+                  {plan.planId === "free" ? (
+                    <Button
+                      className={cn(
+                        "w-full font-semibold",
+                        "border-white/10 bg-white/5 text-white hover:bg-white/10"
+                      )}
+                      variant="outline"
+                      render={<Link href="/sign-up" />}
+                    >
+                      {plan.cta}
+                    </Button>
+                  ) : plan.checkoutUrl ? (
                     <Button
                       className={cn(
                         "w-full font-semibold",
