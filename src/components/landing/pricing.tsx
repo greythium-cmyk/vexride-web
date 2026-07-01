@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useSubscription } from "@/hooks/use-subscription";
-import { type PlanId } from "@/lib/subscription/plans";
+import { STARTER_STRIPE_CHECKOUT_URL, type PlanId } from "@/lib/subscription/plans";
 import { toast } from "sonner";
 
 const plans: Array<{
@@ -30,6 +30,7 @@ const plans: Array<{
   cta: string;
   popular: boolean;
   icon: typeof Sparkles;
+  checkoutUrl?: string;
 }> = [
   {
     planId: "free",
@@ -67,6 +68,7 @@ const plans: Array<{
     cta: "Elegir Starter",
     popular: false,
     icon: Sparkles,
+    checkoutUrl: STARTER_STRIPE_CHECKOUT_URL,
   },
   {
     planId: "pro",
@@ -246,22 +248,43 @@ export function Pricing() {
                 </CardContent>
 
                 <CardFooter className="mt-auto shrink-0">
-                  <Button
-                    className={cn(
-                      "w-full font-semibold",
-                      plan.popular
-                        ? "bg-gradient-vex text-[#0F172A] shadow-lg shadow-teal-500/20 hover:opacity-90"
-                        : "border-white/10 bg-white/5 text-white hover:bg-white/10"
-                    )}
-                    variant={plan.popular ? "default" : "outline"}
-                    disabled={loadingPlan === plan.planId}
-                    onClick={() => void handlePlanSelect(plan.planId)}
-                  >
-                    {loadingPlan === plan.planId && (
-                      <Loader2 className="size-4 animate-spin" aria-hidden />
-                    )}
-                    {plan.cta}
-                  </Button>
+                  {plan.checkoutUrl ? (
+                    <Button
+                      className={cn(
+                        "w-full font-semibold",
+                        plan.popular
+                          ? "bg-gradient-vex text-[#0F172A] shadow-lg shadow-teal-500/20 hover:opacity-90"
+                          : "border-white/10 bg-white/5 text-white hover:bg-white/10"
+                      )}
+                      variant={plan.popular ? "default" : "outline"}
+                      render={
+                        <a
+                          href={plan.checkoutUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        />
+                      }
+                    >
+                      {plan.cta}
+                    </Button>
+                  ) : (
+                    <Button
+                      className={cn(
+                        "w-full font-semibold",
+                        plan.popular
+                          ? "bg-gradient-vex text-[#0F172A] shadow-lg shadow-teal-500/20 hover:opacity-90"
+                          : "border-white/10 bg-white/5 text-white hover:bg-white/10"
+                      )}
+                      variant={plan.popular ? "default" : "outline"}
+                      disabled={loadingPlan === plan.planId}
+                      onClick={() => void handlePlanSelect(plan.planId)}
+                    >
+                      {loadingPlan === plan.planId && (
+                        <Loader2 className="size-4 animate-spin" aria-hidden />
+                      )}
+                      {plan.cta}
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             </motion.div>

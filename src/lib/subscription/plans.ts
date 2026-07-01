@@ -155,3 +155,6 @@ export function getStripePriceId(planId: PlanId): string | null {
 }
 
 export const DEMO_PLAN_STORAGE_KEY = "vexride_demo_plan";
+
+export const STARTER_STRIPE_CHECKOUT_URL =
+  "https://buy.stripe.com/00w14n8dy1JMdOE2ligUM05";

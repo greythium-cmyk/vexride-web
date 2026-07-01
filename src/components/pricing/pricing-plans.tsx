@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { PLANS, type PlanId } from "@/lib/subscription/plans";
+import { PLANS, STARTER_STRIPE_CHECKOUT_URL, type PlanId } from "@/lib/subscription/plans";
 import { useSubscription } from "@/hooks/use-subscription";
 import { toast } from "sonner";
 
@@ -125,24 +125,45 @@ export function PricingPlans({
                   </ul>
                 </CardContent>
                 <CardFooter className="shrink-0">
-                  <Button
-                    className={cn(
-                      "w-full font-semibold",
-                      plan.popular
-                        ? "bg-gradient-vex text-[#0F172A] hover:opacity-90"
-                        : "border-white/10 bg-white/5 text-white hover:bg-white/10"
-                    )}
-                    variant={plan.popular ? "default" : "outline"}
-                    disabled={isCurrent || plan.id === "free" || isLoading}
-                    onClick={() => void handleSelect(plan.id)}
-                  >
-                    {isLoading && <Loader2 className="size-4 animate-spin" aria-hidden />}
-                    {isCurrent
-                      ? "Plan actual"
-                      : plan.id === "free"
-                        ? "Incluido"
-                        : `Elegir ${plan.name}`}
-                  </Button>
+                  {plan.id === "starter" ? (
+                    <Button
+                      className={cn(
+                        "w-full font-semibold",
+                        plan.popular
+                          ? "bg-gradient-vex text-[#0F172A] hover:opacity-90"
+                          : "border-white/10 bg-white/5 text-white hover:bg-white/10"
+                      )}
+                      variant={plan.popular ? "default" : "outline"}
+                      render={
+                        <a
+                          href={STARTER_STRIPE_CHECKOUT_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        />
+                      }
+                    >
+                      Elegir {plan.name}
+                    </Button>
+                  ) : (
+                    <Button
+                      className={cn(
+                        "w-full font-semibold",
+                        plan.popular
+                          ? "bg-gradient-vex text-[#0F172A] hover:opacity-90"
+                          : "border-white/10 bg-white/5 text-white hover:bg-white/10"
+                      )}
+                      variant={plan.popular ? "default" : "outline"}
+                      disabled={isCurrent || plan.id === "free" || isLoading}
+                      onClick={() => void handleSelect(plan.id)}
+                    >
+                      {isLoading && <Loader2 className="size-4 animate-spin" aria-hidden />}
+                      {isCurrent
+                        ? "Plan actual"
+                        : plan.id === "free"
+                          ? "Incluido"
+                          : `Elegir ${plan.name}`}
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             </motion.div>
