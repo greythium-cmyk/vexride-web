@@ -1,22 +1,16 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { Check, Crown, Sparkles, Building } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import {
-  PLAN_ANCHOR_STYLE,
-  STARTER_STRIPE_CHECKOUT_URL,
-  type PlanId,
-} from "@/lib/subscription/plans";
+import { STARTER_STRIPE_CHECKOUT_URL, type PlanId } from "@/lib/subscription/plans";
+
+const anchorStyle = { display: "block", cursor: "pointer" } as const;
 
 const plans: Array<{
   planId: PlanId;
@@ -27,6 +21,8 @@ const plans: Array<{
   description: string;
   features: string[];
   cta: string;
+  href: string;
+  external?: boolean;
   popular: boolean;
   icon: typeof Sparkles;
 }> = [
@@ -45,6 +41,7 @@ const plans: Array<{
       "Soporte por email",
     ],
     cta: "Comenzar gratis",
+    href: "/sign-up",
     popular: false,
     icon: Sparkles,
   },
@@ -64,6 +61,10 @@ const plans: Array<{
       "Historial de viajes",
     ],
     cta: "Elegir Starter",
+    href:
+      process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_STARTER ??
+      STARTER_STRIPE_CHECKOUT_URL,
+    external: true,
     popular: false,
     icon: Sparkles,
   },
@@ -85,6 +86,8 @@ const plans: Array<{
       "Acceso Premium Driver matching",
     ],
     cta: "Elegir Pro",
+    href: process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO ?? "#precios",
+    external: true,
     popular: true,
     icon: Crown,
   },
@@ -107,6 +110,8 @@ const plans: Array<{
       "Facturación centralizada",
     ],
     cta: "Contactar ventas",
+    href: process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE ?? "#precios",
+    external: true,
     popular: false,
     icon: Building,
   },
@@ -117,13 +122,8 @@ export function Pricing() {
     <section id="precios" className="relative py-24 lg:py-32">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#14B8A6]/5 to-transparent" />
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mx-auto max-w-3xl text-center"
-        >
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl text-center">
           <Badge className="mb-4 border-[#14B8A6]/30 bg-[#14B8A6]/10 text-[#14B8A6]">
             Precios
           </Badge>
@@ -135,16 +135,12 @@ export function Pricing() {
             Elige el plan que se adapte a tu rutina laboral. Escala cuando lo
             necesites, sin sorpresas.
           </p>
-        </motion.div>
+        </div>
 
-        <div className="mt-16 grid gap-6 pb-12 lg:grid-cols-4">
-          {plans.map((plan, i) => (
-            <motion.div
+        <div className="relative z-10 mt-16 grid gap-6 pb-12 lg:grid-cols-4">
+          {plans.map((plan) => (
+            <div
               key={plan.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
               className={cn(
                 "h-full",
                 plan.popular && "pt-4 lg:-mt-4 lg:mb-4 lg:pt-0"
@@ -158,7 +154,7 @@ export function Pricing() {
                 )}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <div className="absolute -top-3 left-1/2 z-20 -translate-x-1/2">
                     <Badge className="bg-gradient-vex px-3 py-0.5 font-semibold text-[#0F172A]">
                       Más popular
                     </Badge>
@@ -186,7 +182,7 @@ export function Pricing() {
                         {plan.period}
                       </span>
                     )}
-                    {"priceNote" in plan && plan.priceNote && (
+                    {plan.priceNote && (
                       <span className="ml-1 text-sm text-slate-500">
                         {plan.priceNote}
                       </span>
@@ -216,47 +212,59 @@ export function Pricing() {
                   </ul>
                 </CardContent>
 
-                <CardFooter className="mt-auto shrink-0">
-                  <a
-                    href={
-                      plan.planId === "free"
-                        ? "/sign-up"
-                        : plan.planId === "starter"
-                          ? process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_STARTER ??
-                            STARTER_STRIPE_CHECKOUT_URL
-                          : plan.planId === "pro"
-                            ? process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO ?? "#precios"
-                            : process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE ??
-                              "#precios"
-                    }
-                    style={PLAN_ANCHOR_STYLE}
-                    className={cn(
-                      "w-full rounded-lg py-2.5 text-center text-sm font-semibold",
-                      plan.popular
-                        ? "bg-gradient-vex text-[#0F172A] shadow-lg shadow-teal-500/20"
-                        : "border border-white/10 bg-white/5 text-white"
-                    )}
-                    {...(plan.planId !== "free"
-                      ? { target: "_blank", rel: "noopener noreferrer" }
-                      : {})}
-                  >
-                    {plan.cta}
-                  </a>
-                </CardFooter>
+                <div className="relative z-20 px-4 pb-4">
+                  {plan.planId === "free" ? (
+                    <a
+                      href="/sign-up"
+                      style={anchorStyle}
+                      className="py-3 text-center text-sm font-semibold text-white no-underline"
+                    >
+                      Comenzar gratis
+                    </a>
+                  ) : plan.planId === "starter" ? (
+                    <a
+                      href={
+                        process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_STARTER ??
+                        STARTER_STRIPE_CHECKOUT_URL
+                      }
+                      style={anchorStyle}
+                      className="py-3 text-center text-sm font-semibold text-white no-underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Elegir Starter
+                    </a>
+                  ) : plan.planId === "pro" ? (
+                    <a
+                      href={process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO}
+                      style={anchorStyle}
+                      className="py-3 text-center text-sm font-semibold text-white no-underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Elegir Pro
+                    </a>
+                  ) : (
+                    <a
+                      href={process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE}
+                      style={anchorStyle}
+                      className="py-3 text-center text-sm font-semibold text-white no-underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Contactar ventas
+                    </a>
+                  )}
+                </div>
               </Card>
-            </motion.div>
+            </div>
           ))}
         </div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="mt-12 text-center text-sm text-slate-500"
-        >
+        <p className="mt-12 text-center text-sm text-slate-500">
           Greythium Incorporated se reserva el derecho de modificar precios con
           aviso de 30 días.
-        </motion.p>
+        </p>
       </div>
     </section>
   );

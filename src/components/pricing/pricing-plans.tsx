@@ -1,35 +1,22 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { Check, Crown, Sparkles, Building } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import {
-  PLANS,
-  PLAN_ANCHOR_STYLE,
-  STARTER_STRIPE_CHECKOUT_URL,
-} from "@/lib/subscription/plans";
+import { PLANS, STARTER_STRIPE_CHECKOUT_URL } from "@/lib/subscription/plans";
+
+const anchorStyle = { display: "block", cursor: "pointer" } as const;
 
 const icons = {
   free: Sparkles,
   starter: Sparkles,
   pro: Crown,
   enterprise: Building,
-};
-
-const ctaLabels: Record<string, string> = {
-  free: "Comenzar gratis",
-  starter: "Elegir Starter",
-  pro: "Elegir Pro",
-  enterprise: "Elegir Enterprise",
 };
 
 interface PricingPlansProps {
@@ -56,17 +43,11 @@ export function PricingPlans({ className, showTitle = true }: PricingPlansProps)
       )}
 
       <div className="grid gap-6 pb-12 md:grid-cols-2 xl:grid-cols-4">
-        {PLANS.map((plan, i) => {
+        {PLANS.map((plan) => {
           const Icon = icons[plan.id];
 
           return (
-            <motion.div
-              key={plan.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08 }}
-              className={cn("h-full", plan.popular && "pt-4")}
-            >
+            <div key={plan.id} className={cn("h-full", plan.popular && "pt-4")}>
               <Card
                 className={cn(
                   "relative flex h-full flex-col justify-between border-white/10 bg-[#1E293B]/60 backdrop-blur",
@@ -75,7 +56,7 @@ export function PricingPlans({ className, showTitle = true }: PricingPlansProps)
                 )}
               >
                 {plan.popular && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-[#14B8A6]/30 bg-gradient-vex text-[#0F172A]">
+                  <Badge className="absolute -top-3 left-1/2 z-20 -translate-x-1/2 border-[#14B8A6]/30 bg-gradient-vex text-[#0F172A]">
                     Más popular
                   </Badge>
                 )}
@@ -100,35 +81,52 @@ export function PricingPlans({ className, showTitle = true }: PricingPlansProps)
                     ))}
                   </ul>
                 </CardContent>
-                <CardFooter className="shrink-0">
-                  <a
-                    href={
-                      plan.id === "free"
-                        ? "/sign-up"
-                        : plan.id === "starter"
-                          ? process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_STARTER ??
-                            STARTER_STRIPE_CHECKOUT_URL
-                          : plan.id === "pro"
-                            ? process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO ?? "#precios"
-                            : process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE ??
-                              "#precios"
-                    }
-                    style={PLAN_ANCHOR_STYLE}
-                    className={cn(
-                      "w-full rounded-lg py-2.5 text-center text-sm font-semibold",
-                      plan.popular
-                        ? "bg-gradient-vex text-[#0F172A] shadow-lg shadow-teal-500/10"
-                        : "border border-white/10 bg-white/5 text-white"
-                    )}
-                    {...(plan.id !== "free"
-                      ? { target: "_blank", rel: "noopener noreferrer" }
-                      : {})}
-                  >
-                    {ctaLabels[plan.id] ?? `Elegir ${plan.name}`}
-                  </a>
-                </CardFooter>
+                <div className="relative z-20 px-4 pb-4">
+                  {plan.id === "free" ? (
+                    <a
+                      href="/sign-up"
+                      style={anchorStyle}
+                      className="py-3 text-center text-sm font-semibold text-white no-underline"
+                    >
+                      Comenzar gratis
+                    </a>
+                  ) : plan.id === "starter" ? (
+                    <a
+                      href={
+                        process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_STARTER ??
+                        STARTER_STRIPE_CHECKOUT_URL
+                      }
+                      style={anchorStyle}
+                      className="py-3 text-center text-sm font-semibold text-white no-underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Elegir Starter
+                    </a>
+                  ) : plan.id === "pro" ? (
+                    <a
+                      href={process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO}
+                      style={anchorStyle}
+                      className="py-3 text-center text-sm font-semibold text-white no-underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Elegir Pro
+                    </a>
+                  ) : (
+                    <a
+                      href={process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE}
+                      style={anchorStyle}
+                      className="py-3 text-center text-sm font-semibold text-white no-underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Elegir Enterprise
+                    </a>
+                  )}
+                </div>
               </Card>
-            </motion.div>
+            </div>
           );
         })}
       </div>
