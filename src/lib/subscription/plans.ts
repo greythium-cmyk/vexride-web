@@ -159,12 +159,27 @@ export const DEMO_PLAN_STORAGE_KEY = "vexride_demo_plan";
 export const STARTER_STRIPE_CHECKOUT_URL =
   "https://buy.stripe.com/00w14n8dy1JMdOE2ligUM05";
 
-/** Stripe Payment Links — set NEXT_PUBLIC_* in Vercel for production builds. */
-export const PRO_STRIPE_CHECKOUT_URL =
-  process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO ?? "";
+function resolveStripePaymentLink(
+  envValue: string | undefined,
+  fallbackPath: string
+): string {
+  const trimmed = envValue?.trim();
+  if (trimmed && trimmed.startsWith("https://buy.stripe.com/")) {
+    return trimmed;
+  }
+  return fallbackPath;
+}
 
-export const ENTERPRISE_STRIPE_CHECKOUT_URL =
-  process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE ?? "";
+/** Stripe Payment Links — set NEXT_PUBLIC_* in Vercel, or use /api/stripe/pay/* fallback. */
+export const PRO_STRIPE_CHECKOUT_URL = resolveStripePaymentLink(
+  process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO,
+  "/api/stripe/pay/pro"
+);
+
+export const ENTERPRISE_STRIPE_CHECKOUT_URL = resolveStripePaymentLink(
+  process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE,
+  "/api/stripe/pay/enterprise"
+);
 
 export const STRIPE_PLAN_LINK_STYLE = {
   display: "block",
@@ -194,12 +209,12 @@ export const PLAN_CHECKOUT_LINKS: Record<
     external: true,
   },
   pro: {
-    href: process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO || "#",
+    href: PRO_STRIPE_CHECKOUT_URL,
     label: "Elegir Pro",
     external: true,
   },
   enterprise: {
-    href: process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE || "#",
+    href: ENTERPRISE_STRIPE_CHECKOUT_URL,
     label: "Elegir Enterprise",
     external: true,
   },
@@ -218,10 +233,10 @@ export function getPlanAnchorHref(planId: PlanId): string {
   }
 
   if (planId === "pro") {
-    return process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO ?? "#precios";
+    return PRO_STRIPE_CHECKOUT_URL;
   }
 
-  return process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE ?? "#precios";
+  return ENTERPRISE_STRIPE_CHECKOUT_URL;
 }
 
 /** @deprecated Use getPlanAnchorHref — kept for checkout hook fallback */

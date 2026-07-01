@@ -202,14 +202,35 @@ export function Pricing() {
                   </a>
                 )}
                 {plan.planId === "pro" && (
-                  <a href={PRO_STRIPE_CHECKOUT_URL} style={STRIPE_PLAN_LINK_STYLE}>
+                  <a
+                    href={PRO_STRIPE_CHECKOUT_URL}
+                    style={{
+                      display: "block",
+                      padding: "16px",
+                      background: "#00ffff",
+                      color: "#000",
+                      textAlign: "center",
+                      borderRadius: "8px",
+                      textDecoration: "none",
+                      fontWeight: "bold",
+                    }}
+                  >
                     Elegir Pro
                   </a>
                 )}
                 {plan.planId === "enterprise" && (
                   <a
                     href={ENTERPRISE_STRIPE_CHECKOUT_URL}
-                    style={STRIPE_PLAN_LINK_STYLE}
+                    style={{
+                      display: "block",
+                      padding: "16px",
+                      background: "#00ffff",
+                      color: "#000",
+                      textAlign: "center",
+                      borderRadius: "8px",
+                      textDecoration: "none",
+                      fontWeight: "bold",
+                    }}
                   >
                     Elegir Enterprise
                   </a>
