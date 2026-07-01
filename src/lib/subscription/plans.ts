@@ -159,26 +159,48 @@ export const DEMO_PLAN_STORAGE_KEY = "vexride_demo_plan";
 export const STARTER_STRIPE_CHECKOUT_URL =
   "https://buy.stripe.com/00w14n8dy1JMdOE2ligUM05";
 
-function resolveStripePaymentLink(
-  envValue: string | undefined,
-  fallbackPath: string
-): string {
-  const trimmed = envValue?.trim();
-  if (trimmed && trimmed.startsWith("https://buy.stripe.com/")) {
-    return trimmed;
-  }
-  return fallbackPath;
+const APP_BASE_URL = (
+  process.env.NEXT_PUBLIC_APP_URL ?? "https://vexride.app"
+).replace(/\/$/, "");
+
+/** Force absolute https URLs so browsers never treat checkout as an in-app route. */
+function toAbsoluteHttpsUrl(url: string): string {
+  const trimmed = url.trim();
+  if (trimmed.startsWith("https://")) return trimmed;
+  if (trimmed.startsWith("http://")) return trimmed.replace(/^http:/, "https:");
+  if (trimmed.startsWith("//")) return `https:${trimmed}`;
+  if (trimmed.startsWith("/")) return `${APP_BASE_URL}${trimmed}`;
+  if (trimmed.startsWith("buy.stripe.com/")) return `https://${trimmed}`;
+  return trimmed;
 }
 
-/** Stripe Payment Links — set NEXT_PUBLIC_* in Vercel, or use /api/stripe/pay/* fallback. */
+function resolveStripePaymentLink(
+  envValue: string | undefined,
+  plan: "pro" | "enterprise"
+): string {
+  const trimmed = envValue?.trim();
+  if (trimmed && !trimmed.startsWith("#")) {
+    const absolute = toAbsoluteHttpsUrl(trimmed);
+    if (absolute.startsWith("https://")) return absolute;
+  }
+  return `${APP_BASE_URL}/api/stripe/pay/${plan}`;
+}
+
+/** Open Stripe checkout in a new tab — avoids Next.js in-app navigation. */
+export const STRIPE_CHECKOUT_LINK_PROPS = {
+  target: "_blank" as const,
+  rel: "noopener noreferrer",
+};
+
+/** Stripe Payment Links — set NEXT_PUBLIC_* in Vercel, or use absolute /api/stripe/pay/* fallback. */
 export const PRO_STRIPE_CHECKOUT_URL = resolveStripePaymentLink(
   process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO,
-  "/api/stripe/pay/pro"
+  "pro"
 );
 
 export const ENTERPRISE_STRIPE_CHECKOUT_URL = resolveStripePaymentLink(
   process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE,
-  "/api/stripe/pay/enterprise"
+  "enterprise"
 );
 
 export const STRIPE_PLAN_LINK_STYLE = {

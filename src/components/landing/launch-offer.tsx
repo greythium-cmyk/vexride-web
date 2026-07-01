@@ -5,7 +5,11 @@ import { motion } from "framer-motion";
 import { Check, Copy, Gift, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PRO_STRIPE_CHECKOUT_URL, STRIPE_PLAN_LINK_STYLE } from "@/lib/subscription/plans";
+import {
+  PRO_STRIPE_CHECKOUT_URL,
+  STRIPE_CHECKOUT_LINK_PROPS,
+  STRIPE_PLAN_LINK_STYLE,
+} from "@/lib/subscription/plans";
 
 export function LaunchOffer() {
   const [copied, setCopied] = useState(false);
@@ -120,7 +124,11 @@ export function LaunchOffer() {
                 </div>
               </div>
 
-              <a href={PRO_STRIPE_CHECKOUT_URL} style={STRIPE_PLAN_LINK_STYLE}>
+              <a
+                href={PRO_STRIPE_CHECKOUT_URL}
+                style={STRIPE_PLAN_LINK_STYLE}
+                {...STRIPE_CHECKOUT_LINK_PROPS}
+              >
                 Reclamar mi descuento
               </a>
             </div>

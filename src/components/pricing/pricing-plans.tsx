@@ -13,6 +13,7 @@ import {
   PLANS,
   PRO_STRIPE_CHECKOUT_URL,
   STARTER_STRIPE_CHECKOUT_URL,
+  STRIPE_CHECKOUT_LINK_PROPS,
   STRIPE_PLAN_LINK_STYLE,
 } from "@/lib/subscription/plans";
 
@@ -89,13 +90,18 @@ export function PricingPlans({ className, showTitle = true }: PricingPlansProps)
                   <a href="/sign-up">Comenzar gratis</a>
                 )}
                 {plan.id === "starter" && (
-                  <a href={STARTER_STRIPE_CHECKOUT_URL} style={STRIPE_PLAN_LINK_STYLE}>
+                  <a
+                    href={STARTER_STRIPE_CHECKOUT_URL}
+                    style={STRIPE_PLAN_LINK_STYLE}
+                    {...STRIPE_CHECKOUT_LINK_PROPS}
+                  >
                     Elegir Starter
                   </a>
                 )}
                 {plan.id === "pro" && (
                   <a
                     href={PRO_STRIPE_CHECKOUT_URL}
+                    {...STRIPE_CHECKOUT_LINK_PROPS}
                     style={{
                       display: "block",
                       padding: "16px",
@@ -113,6 +119,7 @@ export function PricingPlans({ className, showTitle = true }: PricingPlansProps)
                 {plan.id === "enterprise" && (
                   <a
                     href={ENTERPRISE_STRIPE_CHECKOUT_URL}
+                    {...STRIPE_CHECKOUT_LINK_PROPS}
                     style={{
                       display: "block",
                       padding: "16px",
