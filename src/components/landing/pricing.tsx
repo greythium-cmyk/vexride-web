@@ -8,29 +8,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { STARTER_STRIPE_CHECKOUT_URL, type PlanId } from "@/lib/subscription/plans";
-
-const freeSignupLinkStyle = {
-  color: "#00ffff",
-  textDecoration: "underline",
-  fontSize: "18px",
-  display: "inline-block",
-  padding: "10px 0",
-} as const;
-
-const anchorStyle = { display: "block", cursor: "pointer" } as const;
+import { PlanPricingLink } from "@/components/pricing/plan-pricing-link";
+import type { PlanId } from "@/lib/subscription/plans";
 
 const plans: Array<{
   planId: PlanId;
   name: string;
   price: string;
   period: string;
-  priceNote?: string;
   description: string;
   features: string[];
-  cta: string;
-  href: string;
-  external?: boolean;
   popular: boolean;
   icon: typeof Sparkles;
 }> = [
@@ -48,8 +35,6 @@ const plans: Array<{
       "Perfil de usuario estándar",
       "Soporte por email",
     ],
-    cta: "Comenzar gratis",
-    href: "/sign-up",
     popular: false,
     icon: Sparkles,
   },
@@ -68,11 +53,6 @@ const plans: Array<{
       "Notificaciones inteligentes",
       "Historial de viajes",
     ],
-    cta: "Elegir Starter",
-    href:
-      process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_STARTER ??
-      STARTER_STRIPE_CHECKOUT_URL,
-    external: true,
     popular: false,
     icon: Sparkles,
   },
@@ -93,9 +73,6 @@ const plans: Array<{
       "Anti-cancelaciones + reemplazo automático",
       "Acceso Premium Driver matching",
     ],
-    cta: "Elegir Pro",
-    href: process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO ?? "#precios",
-    external: true,
     popular: true,
     icon: Crown,
   },
@@ -104,7 +81,6 @@ const plans: Array<{
     name: "Enterprise",
     price: "$199",
     period: "/mes",
-    priceNote: "o custom",
     description:
       "Solución corporativa con panel administrativo, reportes ESG y soporte dedicado.",
     features: [
@@ -117,9 +93,6 @@ const plans: Array<{
       "SLA garantizado",
       "Facturación centralizada",
     ],
-    cta: "Contactar ventas",
-    href: process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE ?? "#precios",
-    external: true,
     popular: false,
     icon: Building,
   },
@@ -190,11 +163,6 @@ export function Pricing() {
                         {plan.period}
                       </span>
                     )}
-                    {plan.priceNote && (
-                      <span className="ml-1 text-sm text-slate-500">
-                        {plan.priceNote}
-                      </span>
-                    )}
                   </div>
                   <CardDescription className="mt-2 text-slate-400">
                     {plan.description}
@@ -221,44 +189,7 @@ export function Pricing() {
                 </CardContent>
 
                 <div className="relative z-20 px-4 pb-4">
-                  {plan.planId === "free" ? (
-                    <a href="/sign-up" style={freeSignupLinkStyle}>
-                      Ir a registrarse gratis
-                    </a>
-                  ) : plan.planId === "starter" ? (
-                    <a
-                      href={
-                        process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_STARTER ??
-                        STARTER_STRIPE_CHECKOUT_URL
-                      }
-                      style={anchorStyle}
-                      className="py-3 text-center text-sm font-semibold text-white no-underline"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Elegir Starter
-                    </a>
-                  ) : plan.planId === "pro" ? (
-                    <a
-                      href={process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO}
-                      style={anchorStyle}
-                      className="py-3 text-center text-sm font-semibold text-white no-underline"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Elegir Pro
-                    </a>
-                  ) : (
-                    <a
-                      href={process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE}
-                      style={anchorStyle}
-                      className="py-3 text-center text-sm font-semibold text-white no-underline"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Contactar ventas
-                    </a>
-                  )}
+                  <PlanPricingLink planId={plan.planId} popular={plan.popular} />
                 </div>
               </Card>
             </div>

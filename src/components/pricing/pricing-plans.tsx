@@ -8,17 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { PLANS, STARTER_STRIPE_CHECKOUT_URL } from "@/lib/subscription/plans";
-
-const anchorStyle = { display: "block", cursor: "pointer" } as const;
-
-const freeSignupLinkStyle = {
-  color: "#00ffff",
-  textDecoration: "underline",
-  fontSize: "18px",
-  display: "inline-block",
-  padding: "10px 0",
-} as const;
+import { PLANS } from "@/lib/subscription/plans";
+import { PlanPricingLink } from "@/components/pricing/plan-pricing-link";
 
 const icons = {
   free: Sparkles,
@@ -90,44 +81,7 @@ export function PricingPlans({ className, showTitle = true }: PricingPlansProps)
                   </ul>
                 </CardContent>
                 <div className="relative z-20 px-4 pb-4">
-                  {plan.id === "free" ? (
-                    <a href="/sign-up" style={freeSignupLinkStyle}>
-                      Ir a registrarse gratis
-                    </a>
-                  ) : plan.id === "starter" ? (
-                    <a
-                      href={
-                        process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_STARTER ??
-                        STARTER_STRIPE_CHECKOUT_URL
-                      }
-                      style={anchorStyle}
-                      className="py-3 text-center text-sm font-semibold text-white no-underline"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Elegir Starter
-                    </a>
-                  ) : plan.id === "pro" ? (
-                    <a
-                      href={process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO}
-                      style={anchorStyle}
-                      className="py-3 text-center text-sm font-semibold text-white no-underline"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Elegir Pro
-                    </a>
-                  ) : (
-                    <a
-                      href={process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE}
-                      style={anchorStyle}
-                      className="py-3 text-center text-sm font-semibold text-white no-underline"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Elegir Enterprise
-                    </a>
-                  )}
+                  <PlanPricingLink planId={plan.id} popular={plan.popular} />
                 </div>
               </Card>
             </div>

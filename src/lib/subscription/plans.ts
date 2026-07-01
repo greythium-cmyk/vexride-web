@@ -163,6 +163,30 @@ export const STARTER_STRIPE_CHECKOUT_URL =
 export const GUEST_CHECKOUT_SIGNUP_SUCCESS_URL =
   "/sign-up?session_id={CHECKOUT_SESSION_ID}";
 
+export const PLAN_CHECKOUT_LINKS: Record<
+  PlanId,
+  { href: string; label: string; external?: boolean }
+> = {
+  free: { href: "/sign-up", label: "Comenzar gratis" },
+  starter: {
+    href:
+      process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_STARTER ??
+      STARTER_STRIPE_CHECKOUT_URL,
+    label: "Elegir Starter",
+    external: true,
+  },
+  pro: {
+    href: process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_PRO || "#",
+    label: "Elegir Pro",
+    external: true,
+  },
+  enterprise: {
+    href: process.env.NEXT_PUBLIC_STRIPE_CHECKOUT_URL_ENTERPRISE || "#",
+    label: "Elegir Enterprise",
+    external: true,
+  },
+};
+
 export const PLAN_ANCHOR_STYLE = { display: "block", cursor: "pointer" } as const;
 
 export function getPlanAnchorHref(planId: PlanId): string {
