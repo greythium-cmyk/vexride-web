@@ -12,6 +12,14 @@ import { PLANS, STARTER_STRIPE_CHECKOUT_URL } from "@/lib/subscription/plans";
 
 const anchorStyle = { display: "block", cursor: "pointer" } as const;
 
+const freeSignupLinkStyle = {
+  color: "#00ffff",
+  textDecoration: "underline",
+  fontSize: "18px",
+  display: "inline-block",
+  padding: "10px 0",
+} as const;
+
 const icons = {
   free: Sparkles,
   starter: Sparkles,
@@ -83,12 +91,8 @@ export function PricingPlans({ className, showTitle = true }: PricingPlansProps)
                 </CardContent>
                 <div className="relative z-20 px-4 pb-4">
                   {plan.id === "free" ? (
-                    <a
-                      href="/sign-up"
-                      style={anchorStyle}
-                      className="py-3 text-center text-sm font-semibold text-white no-underline"
-                    >
-                      Comenzar gratis
+                    <a href="/sign-up" style={freeSignupLinkStyle}>
+                      Ir a registrarse gratis
                     </a>
                   ) : plan.id === "starter" ? (
                     <a

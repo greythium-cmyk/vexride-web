@@ -10,6 +10,14 @@ import {
 import { cn } from "@/lib/utils";
 import { STARTER_STRIPE_CHECKOUT_URL, type PlanId } from "@/lib/subscription/plans";
 
+const freeSignupLinkStyle = {
+  color: "#00ffff",
+  textDecoration: "underline",
+  fontSize: "18px",
+  display: "inline-block",
+  padding: "10px 0",
+} as const;
+
 const anchorStyle = { display: "block", cursor: "pointer" } as const;
 
 const plans: Array<{
@@ -214,12 +222,8 @@ export function Pricing() {
 
                 <div className="relative z-20 px-4 pb-4">
                   {plan.planId === "free" ? (
-                    <a
-                      href="/sign-up"
-                      style={anchorStyle}
-                      className="py-3 text-center text-sm font-semibold text-white no-underline"
-                    >
-                      Comenzar gratis
+                    <a href="/sign-up" style={freeSignupLinkStyle}>
+                      Ir a registrarse gratis
                     </a>
                   ) : plan.planId === "starter" ? (
                     <a
